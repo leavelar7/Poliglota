@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(148,150) scale(1.45)">
+    <path d="M-32 42 Q-32 20 -2 20 Q28 20 28 42 Z" fill="#F6F1E7" stroke="#D8CFBE" stroke-width="2" filter="url(#wc)"/>
+    <path d="M-8 20 L-8 42 M4 20 L4 42" stroke="#D8CFBE" stroke-width="1.4"/>
+    <circle cx="-2" cy="2" r="21" fill="#E9BD97" stroke="#CFA47A" stroke-width="1.8" filter="url(#wc)"/>
+    <circle cx="-10" cy="2" r="2.2" fill="#4A3B2E"/><circle cx="6" cy="2" r="2.2" fill="#4A3B2E"/>
+    <path d="M-8 -3 Q-2 -6 4 -3" stroke="#8A5E3B" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M-9 10 Q-2 15 5 10" fill="none" stroke="#4A3B2E" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M-22 -14 L18 -14 L18 -20 Q18 -24 12 -24 Q14 -34 4 -34 Q4 -42 -2 -42 Q-8 -42 -8 -34 Q-18 -34 -16 -24 Q-22 -24 -22 -20 Z" fill="#F6F1E7" stroke="#D8CFBE" stroke-width="1.8" filter="url(#wc)"/>
+    <path d="M22 20 Q20 14 26 13 M30 20 Q32 13 27 10" stroke="#C3D3DA" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.7"/>
+    <ellipse cx="27" cy="24" rx="10" ry="3" fill="#9DA2A7" stroke="#63696E" stroke-width="1.4" filter="url(#wc)"/>
+    <path d="M17 24 L37 24 L35 37 Q35 40 31 40 L23 40 Q19 40 19 37 Z" fill="#8A8F94" stroke="#63696E" stroke-width="1.8" filter="url(#wc)"/>
+    <path d="M37 27 L44 26" stroke="#63696E" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>
