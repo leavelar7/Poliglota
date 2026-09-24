@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.5)">
+    <path d="M0 -20 Q10 -34 16 -34 M0 -20 Q-8 -34 -14 -32 M0 -20 Q2 -38 8 -40" fill="none" stroke="#7CA85C" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M0 -22 Q30 -18 30 12 Q30 36 0 40 Q-30 36 -30 12 Q-30 -18 0 -22 Z" fill="#C9A6C4" stroke="#A87CA0" stroke-width="2" filter="url(#wc)"/>
+    <g fill="none" stroke="#A87CA0" stroke-width="1.4" opacity="0.7">
+      <path d="M0 -20 Q-14 8 0 40 M0 -20 Q14 8 0 40 M0 -20 Q-24 6 -12 36 M0 -20 Q24 6 12 36"/>
+    </g>
+  </g>
+</svg>

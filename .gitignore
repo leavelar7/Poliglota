@@ -1,0 +1,17 @@
+# Dependências
+node_modules/
+
+# Segredos e variáveis de ambiente (NUNCA subir)
+.env
+.env.*
+*.local
+*.key
+credentials.json
+
+# Vercel
+.vercel/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini

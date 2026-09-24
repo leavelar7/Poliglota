@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="10"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.8)">
+    <path d="M-16 14 Q-30 28 -26 44" stroke="#E9BD97" stroke-width="11" fill="none" stroke-linecap="round" filter="url(#wc)"/>
+    <path d="M-22 54 Q-26 18 -15 10 Q0 4 15 10 Q26 18 22 54 Z" fill="#8AA6B4" filter="url(#wc)"/>
+    <path d="M14 16 Q20 -2 8 -10" stroke="#E9BD97" stroke-width="11" fill="none" stroke-linecap="round" filter="url(#wc)"/>
+    <circle cx="6" cy="-11" r="7.5" fill="#E9BD97" filter="url(#wc)"/>
+    <circle cx="0" cy="-20" r="26" fill="#E9BD97" filter="url(#wc)"/>
+    <path d="M-26 -20 Q-23 -48 0 -48 Q23 -48 26 -20 Q11 -37 0 -37 Q-11 -37 -26 -20 Z" fill="#6E5038" filter="url(#wc)"/>
+    <circle cx="-14" cy="-13" r="5" fill="#E39C82" opacity="0.55"/>
+    <circle cx="14" cy="-13" r="5" fill="#E39C82" opacity="0.55"/>
+    <path d="M-12 -22 Q-9 -19 -6 -22" stroke="#4A3B2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M6 -22 Q9 -19 12 -22" stroke="#4A3B2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <circle cx="0" cy="-10" r="3.2" fill="#DB8C79"/>
+    <path d="M20 -20 c -4 -4 -10 0 -6 5 l 6 6 6 -6 c 4 -5 -2 -9 -6 -5 z" fill="#DB8C79" opacity="0.9" filter="url(#wc)"/>
+    <path d="M34 -34 c -3 -3 -7 0 -4 4 l 4 4 4 -4 c 3 -4 -1 -7 -4 -4 z" fill="#DB8C79" opacity="0.7" filter="url(#wc)"/>
+  </g>
+</svg>

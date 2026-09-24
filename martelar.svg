@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.4)">
+    <rect x="-40" y="26" width="80" height="16" rx="2" fill="#C89B6A" stroke="#A87C4E" stroke-width="2" filter="url(#wc)"/>
+    <rect x="-3" y="6" width="6" height="22" fill="#B7B0A4" stroke="#8E8880" stroke-width="1.4"/>
+    <ellipse cx="0" cy="6" rx="7" ry="3" fill="#B7B0A4" stroke="#8E8880" stroke-width="1.4"/>
+    <g transform="rotate(-24 0 -8)">
+      <rect x="-3" y="-6" width="6" height="34" rx="2" fill="#9A6C42" stroke="#7A5230" stroke-width="1.6"/>
+      <path d="M-20 -14 L18 -14 L18 -2 L-20 -2 Q-24 -2 -24 -8 Q-24 -14 -20 -14 Z" fill="#5A5048" stroke="#3A342E" stroke-width="2" filter="url(#wc)"/>
+    </g>
+    <path d="M9 2 L15 -2 M11 8 L17 8 M7 -2 L11 -8" stroke="#E7C44E" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+</svg>

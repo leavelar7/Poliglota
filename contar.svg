@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,156) scale(1.6)">
+    <path d="M-16 40 Q-18 26 -8 22 L14 22 Q24 26 22 40 Z" fill="#8AA6B4" stroke="#6E8898" stroke-width="2" filter="url(#wc)"/>
+    <path d="M-16 24 Q-18 2 -8 -2 L16 -2 Q24 2 22 22 Q22 30 10 32 L-4 32 Q-16 32 -16 24 Z" fill="#E9BD97" stroke="#CFA47A" stroke-width="2" filter="url(#wc)"/>
+    <rect x="-11" y="-30" width="8" height="30" rx="4" fill="#E9BD97" stroke="#CFA47A" stroke-width="1.8" filter="url(#wc)"/>
+    <rect x="-1" y="-36" width="8" height="36" rx="4" fill="#E9BD97" stroke="#CFA47A" stroke-width="1.8" filter="url(#wc)"/>
+    <rect x="9" y="-30" width="8" height="30" rx="4" fill="#E9BD97" stroke="#CFA47A" stroke-width="1.8" filter="url(#wc)"/>
+    <path d="M-16 8 Q-30 6 -30 -4 Q-30 -12 -18 -10 Q-13 -6 -14 4 Z" fill="#E9BD97" stroke="#CFA47A" stroke-width="1.8" filter="url(#wc)"/>
+    <text x="-7" y="-38" font-family="Georgia" font-size="15" fill="#367BEC" text-anchor="middle">1</text>
+    <text x="3" y="-44" font-family="Georgia" font-size="15" fill="#367BEC" text-anchor="middle">2</text>
+    <text x="13" y="-38" font-family="Georgia" font-size="15" fill="#367BEC" text-anchor="middle">3</text>
+  </g>
+</svg>

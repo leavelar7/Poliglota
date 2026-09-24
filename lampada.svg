@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(2.4)">
+    <line x1="0" y1="-44" x2="0" y2="-20" stroke="#8C7355" stroke-width="2.5"/>
+    <path d="M-24 2 Q0 -28 24 2 Z" fill="#E3B23C" filter="url(#wc)"/>
+    <ellipse cx="0" cy="2" rx="24" ry="5" fill="#CE9A3C" filter="url(#wc)"/>
+    <circle cx="0" cy="9" r="6" fill="#F6E3A8"/>
+    <g stroke="#F0C983" stroke-width="2.4" stroke-linecap="round" opacity="0.6">
+      <line x1="0" y1="18" x2="0" y2="28"/>
+      <line x1="-14" y1="14" x2="-20" y2="22"/>
+      <line x1="14" y1="14" x2="20" y2="22"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="10"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+    <radialGradient id="sunGrad" cx="42%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#F0C983"/>
+      <stop offset="55%" stop-color="#E3A54F"/>
+      <stop offset="100%" stop-color="#CE8636"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(150,150) scale(1.8)">
+    <g opacity="0.9">
+      <circle cx="-46" cy="-50" r="12" fill="url(#sunGrad)" filter="url(#wc)"/>
+      <g stroke="#E7B76E" stroke-width="3" stroke-linecap="round" opacity="0.75">
+        <line x1="-46" y1="-67" x2="-46" y2="-73"/>
+        <line x1="-62" y1="-50" x2="-68" y2="-50"/>
+        <line x1="-58" y1="-62" x2="-62" y2="-66"/>
+        <line x1="-34" y1="-62" x2="-30" y2="-66"/>
+      </g>
+    </g>
+    <path d="M-15 14 Q-34 -6 -30 -30" stroke="#E9BD97" stroke-width="11" fill="none" stroke-linecap="round" filter="url(#wc)"/>
+    <circle cx="-30" cy="-34" r="8" fill="#E9BD97" filter="url(#wc)"/>
+    <path d="M15 14 Q34 -6 30 -30" stroke="#E9BD97" stroke-width="11" fill="none" stroke-linecap="round" filter="url(#wc)"/>
+    <circle cx="30" cy="-34" r="8" fill="#E9BD97" filter="url(#wc)"/>
+    <path d="M-22 54 Q-26 18 -15 10 Q0 4 15 10 Q26 18 22 54 Z" fill="#8AA6B4" filter="url(#wc)"/>
+    <circle cx="0" cy="-20" r="26" fill="#E9BD97" filter="url(#wc)"/>
+    <path d="M-26 -20 Q-23 -48 0 -48 Q23 -48 26 -20 Q11 -37 0 -37 Q-11 -37 -26 -20 Z" fill="#6E5038" filter="url(#wc)"/>
+    <circle cx="-14" cy="-13" r="5" fill="#E39C82" opacity="0.5"/>
+    <circle cx="14" cy="-13" r="5" fill="#E39C82" opacity="0.5"/>
+    <path d="M-12 -22 Q-9 -25 -6 -22" stroke="#4A3B2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M6 -22 Q9 -25 12 -22" stroke="#4A3B2E" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="0" cy="-9" rx="4.5" ry="6" fill="#4A3B2E"/>
+  </g>
+</svg>

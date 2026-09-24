@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.25)">
+    <path d="M-16 22 L-18 52 M16 22 L18 52" stroke="#5A7896" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-16 -6 Q0 -10 16 -6 L14 24 Q0 28 -14 24 Z" fill="#E7695A" stroke="#C64C3E" stroke-width="2" filter="url(#wc)"/>
+    <circle cx="0" cy="-30" r="14" fill="#E9BD97" stroke="#CFA47A" stroke-width="2" filter="url(#wc)"/>
+    <path d="M-15 -34 Q0 -50 15 -34 Q16 -40 0 -42 Q-16 -40 -15 -34 Z" fill="#F3EEE6" stroke="#D8CFBE" stroke-width="1.8" filter="url(#wc)"/>
+    <circle cx="-5" cy="-30" r="1.7" fill="#4A3B2E"/><circle cx="5" cy="-30" r="1.7" fill="#4A3B2E"/>
+    <path d="M-3 -23 Q0 -20 3 -23" stroke="#4A3B2E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M15 -2 L34 8" stroke="#E9BD97" stroke-width="7" stroke-linecap="round" filter="url(#wc)"/>
+    <path d="M34 8 L40 -10" stroke="#B0854A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M22 26 Q22 16 32 16 L52 16 Q60 16 60 26 L58 40 Q56 46 48 46 L28 46 Q22 46 22 40 Z" fill="#8A8F94" stroke="#63696E" stroke-width="2" filter="url(#wc)"/>
+    <ellipse cx="41" cy="16" rx="20" ry="5" fill="#9DA2A7" stroke="#63696E" stroke-width="2"/>
+    <path d="M36 8 Q34 0 40 -2 M46 8 Q48 -2 44 -6" stroke="#C3D3DA" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+</svg>

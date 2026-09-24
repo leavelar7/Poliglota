@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.4)">
+    <path d="M-36 12 Q0 4 36 12 L36 38 Q0 46 -36 38 Z" fill="#E88CA8" stroke="#C86A88" stroke-width="2" filter="url(#wc)"/>
+    <path d="M-24 24 L-14 20 M-6 24 L4 20 M12 24 L22 20" stroke="#F6EEDD" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M-2 22 L38 -20" stroke="#C7C0B4" stroke-width="4" stroke-linecap="round" filter="url(#wc)"/>
+    <path d="M-2 22 L7 13" stroke="#8E8880" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="36" cy="-18" rx="3.6" ry="6" fill="none" stroke="#8E8880" stroke-width="2" transform="rotate(-45 36 -18)"/>
+    <path d="M38 -22 Q28 -28 32 -38 Q36 -46 26 -48" fill="none" stroke="#4E86C6" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

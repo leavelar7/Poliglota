@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+  <g transform="translate(150,150) scale(1.35)">
+    <path d="M-14 -54 L-14 -30 M14 -54 L14 -30" stroke="#8A8F94" stroke-width="4" stroke-linecap="round" filter="url(#wc)"/>
+    <path d="M-16 -54 Q0 -60 16 -54" fill="none" stroke="#8A8F94" stroke-width="4" stroke-linecap="round" filter="url(#wc)"/>
+    <rect x="-30" y="-30" width="60" height="76" rx="12" fill="#C08A4E" stroke="#9A6C38" stroke-width="2.5" filter="url(#wc)"/>
+    <line x1="-24" y1="-14" x2="24" y2="-14" stroke="#A87838" stroke-width="2" opacity="0.6"/>
+    <line x1="-26" y1="2" x2="26" y2="2" stroke="#A87838" stroke-width="2" opacity="0.6"/>
+    <line x1="-26" y1="18" x2="26" y2="18" stroke="#A87838" stroke-width="2" opacity="0.6"/>
+    <line x1="-24" y1="34" x2="24" y2="34" stroke="#A87838" stroke-width="2" opacity="0.6"/>
+    <rect x="30" y="-6" width="8" height="20" rx="3" fill="#8A5E3B" stroke="#6E4A2C" stroke-width="1.5" filter="url(#wc)"/>
+    <rect x="-6" y="-24" width="12" height="9" rx="2" fill="#EFE1C4" stroke="#9A6C38" stroke-width="1.2"/>
+    <circle cx="-18" cy="52" r="6" fill="#4A3B2E" stroke="#3A2C20" stroke-width="1.5" filter="url(#wc)"/>
+    <circle cx="18" cy="52" r="6" fill="#4A3B2E" stroke="#3A2C20" stroke-width="1.5" filter="url(#wc)"/>
+  </g>
+</svg>
