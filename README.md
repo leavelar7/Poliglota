@@ -84,4 +84,4 @@ As credenciais do Supabase usadas no front são a **URL** e a **chave anônima (
 
 ## Autor
 
-Rafael — projeto pessoal de aprendizado de engenharia de software.
+Leslie Avelar — projeto pessoal de aprendizado de engenharia de software.
