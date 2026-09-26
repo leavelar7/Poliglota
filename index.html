@@ -348,12 +348,34 @@
       // ===== dados do banco =====
       let frases = [];       // palavras (tabela "palavras")
       let todasLetras = [];  // letras (tabela "alfabeto")
+      let acertos = {};      // desempenho por "idioma|palavra" (da tabela "tentativas")
+
+      // frases só aparecem quando a palavra-base já foi dominada (>= 85% de acerto)
+      const LIMIAR_DOMINIO = 0.85;
+      const MIN_TENTATIVAS = 3;   // precisa de pelo menos algumas tentativas pra julgar
+      function dominou(pt, lang) {
+        const r = acertos[lang + "|" + pt];
+        if (!r || r.total < MIN_TENTATIVAS) return false;
+        return (r.ok / r.total) >= LIMIAR_DOMINIO;
+      }
+
+      async function carregarAcertos() {
+        const rt = await db.from("tentativas").select("palavras,idioma,resultado");
+        acertos = {};
+        if (!rt.error) rt.data.forEach(function (t) {
+          const k = t.idioma + "|" + t.palavras;
+          if (!acertos[k]) acertos[k] = { ok: 0, total: 0 };
+          acertos[k].total++;
+          if (t.resultado === "acertou" || t.resultado === "quase") acertos[k].ok++;
+        });
+      }
 
       async function carregarDados() {
         const rp = await db.from("palavras").select("*").order("id");
         if (!rp.error) frases = rp.data;
         const ra = await db.from("alfabeto").select("*").order("idioma").order("ordem");
         if (!ra.error) todasLetras = ra.data;
+        await carregarAcertos();
       }
 
       // ===== estado da sessão =====
@@ -390,7 +412,12 @@
       }
       const PALAVRAS_POR_IDIOMA = 20;   // quantas palavras por idioma em cada rodada (ajuste aqui)
       function montarSessao(lang) {
-        const escolhidas = embaralhar(frases).slice(0, PALAVRAS_POR_IDIOMA);
+        const elegiveis = frases.filter(function (w) {
+          if (w.tema !== "frases") return true;   // palavras normais: sempre entram
+          if (!w.requer) return true;              // frase sem pré-requisito: entra
+          return dominou(w.requer, lang);          // frase: só se dominou a palavra-base neste idioma
+        });
+        const escolhidas = embaralhar(elegiveis).slice(0, PALAVRAS_POR_IDIOMA);
         const ws = escolhidas.map(function (w) { return { tipo: "palavra", dados: w }; });
         let ls = embaralhar(todasLetras.filter(function (l) { return l.idioma === lang; })).slice(0, 3);
         const lis = ls.map(function (l) { return { tipo: "letra", dados: l }; });
@@ -409,6 +436,7 @@
         pedirMicrofone();
         document.getElementById("capa").classList.add("escondida");
         if (!frases.length || !todasLetras.length) await carregarDados();
+        else await carregarAcertos();
         posIdioma = sequencia.indexOf(lang);
         if (posIdioma < 0) posIdioma = 0;
         restantes = sequencia.length;
