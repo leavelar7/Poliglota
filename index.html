@@ -21,6 +21,34 @@
 
       .escondida { display: none; }
 
+      /* ===== tela de carregando / erro ===== */
+      #carregando, #erro {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #F1E8D5;
+        z-index: 50;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      .spinner {
+        width: 64px;
+        height: 64px;
+        border: 7px solid #E7D6B4;
+        border-top-color: #D99A4E;
+        border-radius: 50%;
+        animation: girar 0.9s linear infinite;
+        margin-bottom: 22px;
+      }
+      @keyframes girar { to { transform: rotate(360deg); } }
+      #carregando p, #erro p {
+        font-size: 22px;
+        color: #6E5B3A;
+        margin: 6px 0;
+      }
+      #erro .emoji { font-size: 54px; margin-bottom: 10px; }
+      #erro .btn-idioma { margin-top: 20px; cursor: pointer; }
+
       .globo { width: 190px; height: 190px; }
 
       .titulo {
@@ -193,6 +221,20 @@
         <clipPath id="globeClip"><circle cx="0" cy="0" r="76"/></clipPath>
       </defs>
     </svg>
+
+    <!-- ===== TELA: CARREGANDO ===== -->
+    <div id="carregando" class="tela escondida">
+      <div class="spinner"></div>
+      <p>Carregando…</p>
+    </div>
+
+    <!-- ===== TELA: ERRO / SEM INTERNET ===== -->
+    <div id="erro" class="tela escondida">
+      <div class="emoji">🐢</div>
+      <p>Ops! Não consegui carregar.</p>
+      <p>Verifica a internet e tenta de novo.</p>
+      <button class="btn-idioma" onclick="tentarDeNovo()">Tentar de novo</button>
+    </div>
 
     <!-- ===== TELA 1: CAPA ===== -->
     <div id="capa" class="tela">
@@ -372,9 +414,11 @@
 
       async function carregarDados() {
         const rp = await db.from("palavras").select("*").order("id");
-        if (!rp.error) frases = rp.data;
+        if (rp.error || !rp.data || !rp.data.length) throw new Error("falha ao carregar palavras");
+        frases = rp.data;
         const ra = await db.from("alfabeto").select("*").order("idioma").order("ordem");
-        if (!ra.error) todasLetras = ra.data;
+        if (ra.error || !ra.data) throw new Error("falha ao carregar alfabeto");
+        todasLetras = ra.data;
         await carregarAcertos();
       }
 
@@ -432,15 +476,31 @@
       };
 
       // ===== início =====
+      let idiomaEscolhido = "en"; // lembra a escolha pra poder tentar de novo
+
       async function comecar(lang) {
+        idiomaEscolhido = lang;
         pedirMicrofone();
         document.getElementById("capa").classList.add("escondida");
-        if (!frases.length || !todasLetras.length) await carregarDados();
-        else await carregarAcertos();
+        document.getElementById("erro").classList.add("escondida");
+        document.getElementById("carregando").classList.remove("escondida");
+        try {
+          if (!frases.length || !todasLetras.length) await carregarDados();
+          else await carregarAcertos();
+        } catch (e) {
+          document.getElementById("carregando").classList.add("escondida");
+          document.getElementById("erro").classList.remove("escondida");
+          return;
+        }
+        document.getElementById("carregando").classList.add("escondida");
         posIdioma = sequencia.indexOf(lang);
         if (posIdioma < 0) posIdioma = 0;
         restantes = sequencia.length;
         iniciarIdioma(false); // o idioma que a criança escolheu não mostra bandeira
+      }
+
+      function tentarDeNovo() {
+        comecar(idiomaEscolhido);
       }
 
       function iniciarIdioma(anunciar) {
