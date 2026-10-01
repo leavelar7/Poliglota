@@ -19,7 +19,7 @@
         justify-content: center;
       }
 
-      .escondida { display: none; }
+      .escondida { display: none !important; }
 
       /* ===== tela de carregando / erro ===== */
       #carregando, #erro {
@@ -52,7 +52,7 @@
       /* ===== mapa de fases ===== */
       #mapa { min-height: 100vh; padding: 0 0 40px; box-sizing: border-box; display: block; }
       .mapa-topo { text-align: center; padding: 16px 16px 4px; }
-      .mapa-topo .flag { width: 54px; height: auto; }
+      .mapa-topo #mapaFlag svg { width: 54px; height: auto; }
       .mapa-topo h2 { margin: 4px 0 0; font-size: 22px; color: #6E5B3A; font-weight: normal; }
       .mapa-topo .contagem { font-size: 14px; color: #9A876A; margin-top: 2px; }
       .mapa-voltar {
