@@ -380,6 +380,7 @@
       </div>
     </div>
 
+    <script src="logica.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const db = supabase.createClient(
@@ -395,10 +396,9 @@
       // frases só aparecem quando a palavra-base já foi dominada (>= 85% de acerto)
       const LIMIAR_DOMINIO = 0.85;
       const MIN_TENTATIVAS = 3;   // precisa de pelo menos algumas tentativas pra julgar
+      // usa a função pura de logica.js (mesma lógica, agora testável)
       function dominou(pt, lang) {
-        const r = acertos[lang + "|" + pt];
-        if (!r || r.total < MIN_TENTATIVAS) return false;
-        return (r.ok / r.total) >= LIMIAR_DOMINIO;
+        return Logica.dominou(acertos, pt, lang, LIMIAR_DOMINIO, MIN_TENTATIVAS);
       }
 
       async function carregarAcertos() {
@@ -654,32 +654,9 @@
         try { recog.start(); } catch (e) { escutando = false; }
       }
 
-      function normalizar(s) {
-        return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, "").trim().replace(/\s+/g, " ");
-      }
-      function distancia(a, b) {
-        const m = a.length, n = b.length;
-        const d = Array.from({ length: m + 1 }, function () { return new Array(n + 1).fill(0); });
-        for (let i = 0; i <= m; i++) d[i][0] = i;
-        for (let j = 0; j <= n; j++) d[0][j] = j;
-        for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
-          const c = a[i - 1] === b[j - 1] ? 0 : 1;
-          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
-        }
-        return d[m][n];
-      }
-
       function avaliar(textos) {
         const el = elOuvido();
-        const alvo = normalizar(alvoAtual());
-        let s = 0;
-        textos.forEach(function (t) {
-          const dito = normalizar(t);
-          let x;
-          if (dito === alvo || dito.includes(alvo) || alvo.includes(dito)) x = 1;
-          else { const m = Math.max(alvo.length, dito.length) || 1; x = 1 - distancia(alvo, dito) / m; }
-          if (x > s) s = x;
-        });
+        const s = Logica.pontuar(textos, alvoAtual()); // lógica pura de logica.js
         if (s >= 0.55) { salvar("acertou"); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
         else if (s >= 0.30) { salvar("quase"); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
         else { salvar("errou"); registrarFalha("tenta de novo 🙂"); }
