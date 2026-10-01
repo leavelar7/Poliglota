@@ -83,34 +83,38 @@ test("ordemTemas deixa 'frases' fora da trilha", function () {
   assert.deepStrictEqual(ordemTemas(palavras), ["animais"]);
 });
 
-// ---------- fases: estrelas (rodadas + acerto) ----------
+// ---------- fases: estrelas (rodadas + melhor rodada) ----------
 test("sem terminar nenhuma rodada: 0 estrelas", function () {
-  assert.strictEqual(estrelasFase(0, 0, 10), 0);
+  assert.strictEqual(estrelasFase(0, 0), 0);
 });
 test("jogou mas ainda não cumpriu o critério: 1 estrela", function () {
-  assert.strictEqual(estrelasFase(1, 10, 10), 1);  // 100% mas só 1 rodada
-  assert.strictEqual(estrelasFase(2, 20, 20), 1);  // 100% mas só 2 rodadas
-  assert.strictEqual(estrelasFase(3, 25, 30), 1);  // 3 rodadas mas 83% (<90%)
+  assert.strictEqual(estrelasFase(1, 1), 1);     // rodada perfeita mas só 1 rodada
+  assert.strictEqual(estrelasFase(2, 1), 1);     // perfeita mas só 2 rodadas
+  assert.strictEqual(estrelasFase(3, 0.83), 1);  // 3 rodadas mas melhor rodada 83% (<90%)
 });
-test("3+ rodadas e 90%+: 2 estrelas (destrava a próxima)", function () {
-  assert.strictEqual(estrelasFase(3, 27, 30), 2);  // 90%
-  assert.strictEqual(estrelasFase(5, 47, 50), 2);  // 94%
+test("3+ rodadas e melhor rodada 90%+: 2 estrelas (destrava a próxima)", function () {
+  assert.strictEqual(estrelasFase(3, 0.90), 2);
+  assert.strictEqual(estrelasFase(5, 0.94), 2);
 });
-test("3+ rodadas e 100%: 3 estrelas", function () {
-  assert.strictEqual(estrelasFase(3, 30, 30), 3);
+test("3+ rodadas e uma rodada perfeita (100%): 3 estrelas", function () {
+  assert.strictEqual(estrelasFase(3, 1), 3);
+});
+test("um erro antigo NÃO trava a 3ª estrela se houve rodada perfeita depois", function () {
+  // melhor rodada = 1 (perfeita), mesmo que rodadas anteriores tenham tido erro
+  assert.strictEqual(estrelasFase(7, 1), 3);
 });
 
 // ---------- fases: barra de progresso ----------
-test("progressoFase é 0 no começo e 1 ao passar (3 rodadas + 90%)", function () {
-  assert.strictEqual(progressoFase(0, 0, 10), 0);
-  assert.strictEqual(progressoFase(3, 27, 30), 1); // exatamente no critério
+test("progressoFase é 0 no começo e 1 ao passar (3 rodadas + melhor rodada 90%)", function () {
+  assert.strictEqual(progressoFase(0, 0), 0);
+  assert.strictEqual(progressoFase(3, 0.90), 1); // exatamente no critério
 });
 test("progressoFase enche bem depois de 1 rodada com 90%", function () {
-  const v = progressoFase(1, 9, 10); // metade acerto cheia + 1/3 das rodadas
+  const v = progressoFase(1, 0.90); // metade acerto cheia + 1/3 das rodadas
   assert.ok(v > 0.6 && v < 0.7, "esperado ~0.667, veio " + v);
 });
 test("progressoFase não chega a 1 se o acerto está baixo", function () {
-  const v = progressoFase(3, 21, 30); // 3 rodadas mas 70%
+  const v = progressoFase(3, 0.70); // 3 rodadas mas melhor rodada 70%
   assert.ok(v < 1, "não deve completar com acerto baixo: " + v);
 });
 

@@ -78,14 +78,14 @@
   }
 
   // estrelas de uma fase, a partir de quantas vezes foi jogada (rodadas)
-  // e do acerto acumulado (ok de total) nas palavras daquela fase:
-  //   3 = jogou 3+ vezes e acertou tudo (100%)
-  //   2 = jogou 3+ vezes e está com 90%+  -> destrava a próxima fase
+  // e do MELHOR acerto de uma rodada (acc, de 0 a 1) — não do acumulado,
+  // pra um erro antigo não travar a estrela pra sempre:
+  //   3 = jogou 3+ vezes e teve uma rodada perfeita (100%)
+  //   2 = jogou 3+ vezes e a melhor rodada chegou a 90%+  -> destrava a próxima
   //   1 = já jogou ao menos uma vez, mas ainda não cumpriu o critério
   //   0 = nunca terminou a fase
-  function estrelasFase(rodadas, ok, total) {
+  function estrelasFase(rodadas, acc) {
     if (rodadas < 1) return 0;
-    const acc = total > 0 ? ok / total : 0;
     if (rodadas >= 3 && acc >= 0.999) return 3;
     if (rodadas >= 3 && acc >= 0.90) return 2;
     return 1;
@@ -94,8 +94,7 @@
   // quão perto de PASSAR a fase (0 a 1). passar = 3 rodadas E 90% de acerto.
   // junta as duas metades: metade "rodadas" + metade "acerto". chega a 1
   // exatamente quando as duas condições são cumpridas.
-  function progressoFase(rodadas, ok, total) {
-    const acc = total > 0 ? ok / total : 0;
+  function progressoFase(rodadas, acc) {
     const parteRodadas = Math.min(rodadas, 3) / 3;
     const parteAcc = Math.min(acc / 0.90, 1);
     return 0.5 * parteRodadas + 0.5 * parteAcc;

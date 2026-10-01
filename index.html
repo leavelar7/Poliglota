@@ -621,6 +621,7 @@
       let iconeTema = {};       // tema -> figura representativa (aquarela)
       let faseAtual = null;     // tema sendo jogado agora
       let rodadaContada = false;
+      let rodadaOk = {};        // palavras acertadas NESTA rodada (pt -> true)
 
       // ---- progresso (quantas rodadas por fase) em localStorage ----
       function lerProgresso() {
@@ -634,27 +635,23 @@
         const p = lerProgresso();
         return (p[lang] && p[lang][tema] && p[lang][tema].rodadas) || 0;
       }
-      function incRodadas(lang, tema) {
+      // registra uma rodada concluída: +1 rodada e guarda a MELHOR acurácia de rodada
+      function registrarRodada(lang, tema, acc) {
         const p = lerProgresso();
         if (!p[lang]) p[lang] = {};
-        if (!p[lang][tema]) p[lang][tema] = { rodadas: 0 };
+        if (!p[lang][tema]) p[lang][tema] = { rodadas: 0, melhorAcc: 0 };
         p[lang][tema].rodadas++;
+        if (acc > (p[lang][tema].melhorAcc || 0)) p[lang][tema].melhorAcc = acc;
         salvarProgresso(p);
       }
-
-      // ---- acerto acumulado e estrelas de uma fase ----
-      function acertoDaFase(lang, tema) {
-        let ok = 0, total = 0;
-        frases.forEach(function (w) {
-          if (w.tema !== tema) return;
-          const r = acertos[lang + "|" + w.pt];
-          if (r) { ok += r.ok; total += r.total; }
-        });
-        return { ok: ok, total: total };
+      function melhorAccDe(lang, tema) {
+        const p = lerProgresso();
+        return (p[lang] && p[lang][tema] && p[lang][tema].melhorAcc) || 0;
       }
+
+      // ---- estrelas de uma fase (rodadas + melhor rodada) ----
       function estrelasDe(lang, tema) {
-        const a = acertoDaFase(lang, tema);
-        return Logica.estrelasFase(rodadasDe(lang, tema), a.ok, a.total);
+        return Logica.estrelasFase(rodadasDe(lang, tema), melhorAccDe(lang, tema));
       }
       function estrelasMapa(lang) {
         const m = {};
@@ -782,7 +779,7 @@
       function jogarFase(tema) {
         const i = temas.indexOf(tema);
         if (!Logica.faseDestravada(estrelasMapa(idiomaAtual), temas, i)) return; // travada
-        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false;
+        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false; rodadaOk = {};
         itens = montarFase(tema);
         if (!itens.length) return;
         fila = itens.map(function (_, k) { return k; });
@@ -794,11 +791,15 @@
 
       function fimDeRodada() {
         const antes = estrelasDe(idiomaAtual, faseAtual);
-        if (!rodadaContada) { incRodadas(idiomaAtual, faseAtual); rodadaContada = true; }
+        // acurácia DESTA rodada = palavras acertadas / total de palavras da fase
+        const totalPalavras = itens.length || 1;
+        let okRodada = 0;
+        for (const k in rodadaOk) if (rodadaOk[k]) okRodada++;
+        const accRodada = okRodada / totalPalavras;
+        if (!rodadaContada) { registrarRodada(idiomaAtual, faseAtual, accRodada); rodadaContada = true; }
         const depois = estrelasDe(idiomaAtual, faseAtual);
         const rod = rodadasDe(idiomaAtual, faseAtual);
-        const a = acertoDaFase(idiomaAtual, faseAtual);
-        const pct = a.total ? Math.round(100 * a.ok / a.total) : 0;
+        const melhor = melhorAccDe(idiomaAtual, faseAtual);
 
         document.getElementById("fimEstrelas").innerHTML =
           '<span class="' + (depois >= 1 ? "pop" : "") + '">' + svgEstrela(depois >= 1) + '</span>' +
@@ -810,7 +811,7 @@
         else if (depois > antes) titulo = "Nova estrela! ⭐";
         else titulo = "Boa! Continua assim 👏";
         document.getElementById("fimTitulo").textContent = titulo;
-        const prog = Logica.progressoFase(rod, a.ok, a.total);
+        const prog = Logica.progressoFase(rod, melhor);
         const fill = document.getElementById("fimBarra");
         fill.style.width = "0%";
         setTimeout(function () { fill.style.width = Math.round(prog * 100) + "%"; }, 80);
@@ -1003,8 +1004,9 @@
       function avaliar(textos) {
         const el = elOuvido();
         const s = Logica.pontuar(textos, alvoAtual()); // lógica pura de logica.js
-        if (s >= 0.55) { salvar("acertou"); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
-        else if (s >= 0.30) { salvar("quase"); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
+        function marcarOk() { if (atual.tipo === "palavra") rodadaOk[atual.dados.pt] = true; }
+        if (s >= 0.55) { salvar("acertou"); marcarOk(); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
+        else if (s >= 0.30) { salvar("quase"); marcarOk(); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
         else { salvar("errou"); registrarFalha("tenta de novo 🙂"); }
       }
 
