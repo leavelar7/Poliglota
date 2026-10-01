@@ -49,6 +49,71 @@
       #erro .emoji { font-size: 54px; margin-bottom: 10px; }
       #erro .btn-idioma { margin-top: 20px; cursor: pointer; }
 
+      /* ===== mapa de fases ===== */
+      #mapa { min-height: 100vh; padding: 0 0 40px; box-sizing: border-box; display: block; }
+      .mapa-topo { text-align: center; padding: 16px 16px 4px; }
+      .mapa-topo .flag { width: 54px; height: auto; }
+      .mapa-topo h2 { margin: 4px 0 0; font-size: 22px; color: #6E5B3A; font-weight: normal; }
+      .mapa-topo .contagem { font-size: 14px; color: #9A876A; margin-top: 2px; }
+      .mapa-voltar {
+        display: inline-block; margin-top: 8px; font-size: 14px; color: #9A876A;
+        background: none; border: none; cursor: pointer; font-family: Georgia, serif;
+      }
+      .trilha { position: relative; max-width: 420px; margin: 0 auto; padding: 14px 0 10px; }
+      .trilha::before {
+        content: ""; position: absolute; top: 46px; bottom: 60px; left: 50%;
+        border-left: 3px dashed #D9C7A0; transform: translateX(-50%); z-index: 0;
+      }
+      .fase { position: relative; z-index: 1; width: 120px; margin: 16px 0; text-align: center; }
+      .fase.esq { margin-left: 28px; }
+      .fase.dir { margin-left: auto; margin-right: 28px; }
+      .bolha {
+        width: 94px; height: 94px; border-radius: 50%; margin: 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        background: #F6EEDD; border: 4px solid #D9C7A0; box-shadow: 0 3px 0 #D9C7A0;
+        cursor: pointer;
+      }
+      .bolha img { width: 66px; height: 66px; pointer-events: none; }
+      .fase.aberta .bolha { border-color: #D99A4E; box-shadow: 0 3px 0 #C77F34; }
+      .fase.atual .bolha { border-color: #D99A4E; box-shadow: 0 0 0 4px #F6DDB8, 0 3px 0 #C77F34; animation: pulso 1.4s ease-in-out infinite; }
+      @keyframes pulso { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.06);} }
+      .fase.travada .bolha { filter: grayscale(0.75); opacity: 0.5; cursor: default; }
+      .fase .nome { font-size: 15px; margin-top: 5px; color: #6E5B3A; }
+      .fase.travada .nome { color: #AC9C7E; }
+      .estrelas { height: 22px; margin-bottom: 3px; }
+      .estrelas svg { width: 22px; height: 22px; margin: 0 1px; vertical-align: middle; }
+      .st-cheia { fill: #F2B705; stroke: #D99A4E; stroke-width: 6; }
+      .st-vazia { fill: #E7DAC0; stroke: #D9C7A0; stroke-width: 6; }
+      .cadeado { font-size: 22px; }
+      .trofeu-fase { width: 100%; text-align: center; margin-top: 26px; }
+      .trofeu-bolha {
+        width: 110px; height: 110px; border-radius: 50%; margin: 0 auto;
+        display: flex; align-items: center; justify-content: center; font-size: 54px;
+        background: #FBF3DF; border: 4px dashed #C9A24A;
+      }
+      .trofeu-fase.travado .trofeu-bolha { filter: grayscale(0.6); opacity: 0.65; }
+      .trofeu-fase .nome { font-size: 16px; color: #6E5B3A; margin-top: 4px; }
+
+      /* ===== fim de rodada / troféu (sobreposições) ===== */
+      #fimRodada, #telaTrofeu {
+        position: fixed; inset: 0; background: rgba(241,232,213,0.97); z-index: 60;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center; padding: 24px; box-sizing: border-box;
+      }
+      #fimRodada h3, #telaTrofeu h3 { font-size: 24px; color: #6E5B3A; font-weight: normal; margin: 4px 0; }
+      #fimRodada .detalhe { font-size: 15px; color: #9A876A; margin: 6px 0 2px; }
+      #fimRodada .dica { font-size: 14px; color: #B08C5A; margin: 4px 0 10px; max-width: 300px; }
+      .estrelas-grande svg { width: 54px; height: 54px; margin: 0 3px; }
+      .estrelas-grande .pop { animation: pop 0.6s ease; }
+      @keyframes pop { 0%{ transform: scale(0);} 70%{ transform: scale(1.3);} 100%{ transform: scale(1);} }
+      .botoes-fim { margin-top: 14px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+      .botoes-fim button {
+        font-family: Georgia, serif; font-size: 17px; padding: 12px 20px; border-radius: 16px;
+        border: 3px solid #D9C7A0; background: #F6EEDD; color: #6E5B3A; cursor: pointer;
+      }
+      .botoes-fim button.destaque { border-color: #D99A4E; background: #FBEAD0; }
+      #telaTrofeu .trofeu-emoji { font-size: 92px; animation: pop 0.8s ease; }
+
       .globo { width: 190px; height: 190px; }
 
       .titulo {
@@ -316,6 +381,38 @@
       </div>
     </div>
 
+    <!-- ===== TELA: MAPA DE FASES ===== -->
+    <div id="mapa" class="escondida">
+      <div class="mapa-topo">
+        <div id="mapaFlag"></div>
+        <h2 id="mapaNome"></h2>
+        <div class="contagem" id="mapaContagem"></div>
+        <button class="mapa-voltar" onclick="voltarCapa()">‹ trocar idioma</button>
+      </div>
+      <div class="trilha" id="trilha"></div>
+    </div>
+
+    <!-- ===== SOBREPOSIÇÃO: FIM DE RODADA ===== -->
+    <div id="fimRodada" class="escondida">
+      <div class="estrelas-grande" id="fimEstrelas"></div>
+      <h3 id="fimTitulo"></h3>
+      <div class="detalhe" id="fimDetalhe"></div>
+      <div class="dica" id="fimDica"></div>
+      <div class="botoes-fim">
+        <button class="destaque" onclick="jogarDeNovo()">Jogar de novo</button>
+        <button onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
+      </div>
+    </div>
+
+    <!-- ===== SOBREPOSIÇÃO: TROFÉU DO IDIOMA ===== -->
+    <div id="telaTrofeu" class="escondida">
+      <div class="trofeu-emoji">🏆</div>
+      <h3 id="trofeuTexto"></h3>
+      <div class="botoes-fim">
+        <button class="destaque" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
+      </div>
+    </div>
+
     <!-- ===== TELA 2: CARTÃO DE PALAVRA ===== -->
     <div id="estudo" class="tela escondida">
       <div class="cartao">
@@ -493,10 +590,178 @@
           return;
         }
         document.getElementById("carregando").classList.add("escondida");
-        posIdioma = sequencia.indexOf(lang);
-        if (posIdioma < 0) posIdioma = 0;
-        restantes = sequencia.length;
-        iniciarIdioma(false); // o idioma que a criança escolheu não mostra bandeira
+        abrirMapa(lang);
+      }
+
+      // ===================== MODELO DE FASES =====================
+      let idiomaAtual = "en";   // idioma do mapa aberto
+      let temas = [];           // ordem das fases (Logica.ordemTemas)
+      let iconeTema = {};       // tema -> figura representativa (aquarela)
+      let faseAtual = null;     // tema sendo jogado agora
+      let rodadaContada = false;
+
+      // ---- progresso (quantas rodadas por fase) em localStorage ----
+      function lerProgresso() {
+        try { return JSON.parse(localStorage.getItem("poliglota_progresso") || "{}"); }
+        catch (e) { return {}; }
+      }
+      function salvarProgresso(p) {
+        try { localStorage.setItem("poliglota_progresso", JSON.stringify(p)); } catch (e) {}
+      }
+      function rodadasDe(lang, tema) {
+        const p = lerProgresso();
+        return (p[lang] && p[lang][tema] && p[lang][tema].rodadas) || 0;
+      }
+      function incRodadas(lang, tema) {
+        const p = lerProgresso();
+        if (!p[lang]) p[lang] = {};
+        if (!p[lang][tema]) p[lang][tema] = { rodadas: 0 };
+        p[lang][tema].rodadas++;
+        salvarProgresso(p);
+      }
+
+      // ---- acerto acumulado e estrelas de uma fase ----
+      function acertoDaFase(lang, tema) {
+        let ok = 0, total = 0;
+        frases.forEach(function (w) {
+          if (w.tema !== tema) return;
+          const r = acertos[lang + "|" + w.pt];
+          if (r) { ok += r.ok; total += r.total; }
+        });
+        return { ok: ok, total: total };
+      }
+      function estrelasDe(lang, tema) {
+        const a = acertoDaFase(lang, tema);
+        return Logica.estrelasFase(rodadasDe(lang, tema), a.ok, a.total);
+      }
+      function estrelasMapa(lang) {
+        const m = {};
+        temas.forEach(function (t) { m[t] = estrelasDe(lang, t); });
+        return m;
+      }
+
+      function esconderTudo() {
+        ["capa", "estudo", "alfabeto", "bandeira", "mapa", "fimRodada", "telaTrofeu"]
+          .forEach(function (id) { document.getElementById(id).classList.add("escondida"); });
+      }
+
+      function nomeBonito(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+
+      function abrirMapa(lang) {
+        idiomaAtual = lang; idioma = lang;
+        if (!temas.length) {
+          temas = Logica.ordemTemas(frases);
+          temas.forEach(function (t) {
+            const w = frases.filter(function (x) { return x.tema === t; })
+                            .sort(function (a, b) { return a.id - b.id; })[0];
+            iconeTema[t] = w ? w.fig : null;
+          });
+        }
+        esconderTudo();
+        renderMapa();
+        document.getElementById("mapa").classList.remove("escondida");
+      }
+
+      function svgEstrela(cheia) {
+        return '<svg viewBox="0 0 100 100"><path class="' + (cheia ? "st-cheia" : "st-vazia") +
+          '" d="M50 6 L62 38 L96 40 L69 61 L79 94 L50 74 L21 94 L31 61 L4 40 L38 38 Z"/></svg>';
+      }
+
+      function renderMapa() {
+        const estr = estrelasMapa(idiomaAtual);
+        document.getElementById("mapaFlag").innerHTML = bandeiras[idiomaAtual];
+        document.getElementById("mapaNome").textContent = nomeIdioma[idiomaAtual];
+        const totalEstrelas = temas.reduce(function (s, t) { return s + estr[t]; }, 0);
+        const vencidas = temas.filter(function (t) { return estr[t] >= 2; }).length;
+        document.getElementById("mapaContagem").textContent =
+          vencidas + " de " + temas.length + " fases · " + totalEstrelas + " estrelas";
+
+        const trilha = document.getElementById("trilha");
+        trilha.innerHTML = "";
+        temas.forEach(function (t, i) {
+          const n = estr[t];
+          const aberta = Logica.faseDestravada(estr, temas, i);
+          const ehAtual = aberta && n < 2;  // a próxima a vencer "pulsa"
+          const div = document.createElement("div");
+          div.className = "fase " + (i % 2 === 0 ? "esq" : "dir") + " " +
+            (!aberta ? "travada" : (ehAtual ? "atual" : "aberta"));
+          let topo;
+          if (!aberta) topo = '<div class="estrelas"><span class="cadeado">🔒</span></div>';
+          else topo = '<div class="estrelas">' + svgEstrela(n >= 1) + svgEstrela(n >= 2) + svgEstrela(n >= 3) + '</div>';
+          const ic = iconeTema[t] ? '<img src="' + svgSrc(iconeTema[t]) + '" alt="">' : "";
+          div.innerHTML = topo + '<div class="bolha">' + ic + '</div><div class="nome">' + nomeBonito(t) + '</div>';
+          if (aberta) div.querySelector(".bolha").addEventListener("click", function () { jogarFase(t); });
+          trilha.appendChild(div);
+        });
+
+        // troféu no fim
+        const temTrofeu = Logica.ganhouTrofeu(estr, temas);
+        const tro = document.createElement("div");
+        tro.className = "trofeu-fase" + (temTrofeu ? "" : " travado");
+        tro.innerHTML = '<div class="trofeu-bolha">🏆</div><div class="nome">Troféu do ' +
+          nomeIdioma[idiomaAtual] + '</div>';
+        trilha.appendChild(tro);
+      }
+
+      function montarFase(tema) {
+        const ws = frases.filter(function (w) { return w.tema === tema; });
+        return embaralhar(ws).map(function (w) { return { tipo: "palavra", dados: w }; });
+      }
+
+      function jogarFase(tema) {
+        const i = temas.indexOf(tema);
+        if (!Logica.faseDestravada(estrelasMapa(idiomaAtual), temas, i)) return; // travada
+        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false;
+        itens = montarFase(tema);
+        if (!itens.length) return;
+        fila = itens.map(function (_, k) { return k; });
+        p = 0; errados = []; revisando = false;
+        esconderTudo();
+        mostrarItem();
+      }
+      function jogarDeNovo() { jogarFase(faseAtual); }
+
+      function fimDeRodada() {
+        const antes = estrelasDe(idiomaAtual, faseAtual);
+        if (!rodadaContada) { incRodadas(idiomaAtual, faseAtual); rodadaContada = true; }
+        const depois = estrelasDe(idiomaAtual, faseAtual);
+        const rod = rodadasDe(idiomaAtual, faseAtual);
+        const a = acertoDaFase(idiomaAtual, faseAtual);
+        const pct = a.total ? Math.round(100 * a.ok / a.total) : 0;
+
+        document.getElementById("fimEstrelas").innerHTML =
+          '<span class="' + (depois >= 1 ? "pop" : "") + '">' + svgEstrela(depois >= 1) + '</span>' +
+          '<span class="' + (depois >= 2 ? "pop" : "") + '">' + svgEstrela(depois >= 2) + '</span>' +
+          '<span class="' + (depois >= 3 ? "pop" : "") + '">' + svgEstrela(depois >= 3) + '</span>';
+
+        let titulo;
+        if (depois >= 2 && antes < 2) titulo = "Fase vencida! 🎉";
+        else if (depois > antes) titulo = "Nova estrela! ⭐";
+        else titulo = "Boa! Continua assim 👏";
+        document.getElementById("fimTitulo").textContent = titulo;
+        document.getElementById("fimDetalhe").textContent = "Rodada " + rod + " · " + pct + "% de acerto";
+        document.getElementById("fimDica").textContent =
+          depois >= 2 ? "" :
+          "Pra liberar a próxima fase: jogue 3 vezes e chegue a 90% (você está em " + rod + " de 3 e " + pct + "%).";
+
+        esconderTudo();
+        document.getElementById("fimRodada").classList.remove("escondida");
+
+        if (Logica.ganhouTrofeu(estrelasMapa(idiomaAtual), temas)) {
+          setTimeout(mostrarTrofeu, 1400);
+        }
+      }
+
+      function mostrarTrofeu() {
+        document.getElementById("trofeuTexto").textContent =
+          "Você conquistou o troféu do " + nomeIdioma[idiomaAtual] + "!";
+        esconderTudo();
+        document.getElementById("telaTrofeu").classList.remove("escondida");
+      }
+
+      function voltarCapa() {
+        esconderTudo();
+        document.getElementById("capa").classList.remove("escondida");
       }
 
       function tentarDeNovo() {
@@ -680,17 +945,16 @@
         if (!revisando && errados.length > 0) {
           revisando = true; fila = errados.slice(); errados = []; p = 0; mostrarItem(); return;
         }
-        restantes = restantes - 1;
-        if (restantes > 0) { posIdioma = (posIdioma + 1) % sequencia.length; iniciarIdioma(true); }
-        else {
-          document.getElementById("estudo").classList.add("escondida");
-          document.getElementById("alfabeto").classList.add("escondida");
-          document.getElementById("capa").classList.remove("escondida");
-        }
+        fimDeRodada(); // acabou a fase: mostra estrelas e volta pro mapa
       }
 
       function salvar(resultado) {
         const rotulo = atual.tipo === "letra" ? ("letra " + atual.dados.letra) : atual.dados.pt;
+        // atualiza o acumulado local na hora, pras estrelas refletirem sem recarregar
+        const k = idioma + "|" + rotulo;
+        if (!acertos[k]) acertos[k] = { ok: 0, total: 0 };
+        acertos[k].total++;
+        if (resultado === "acertou" || resultado === "quase") acertos[k].ok++;
         db.from("tentativas").insert({ palavras: rotulo, idioma: idioma, resultado: resultado })
           .then(function (r) { if (r.error) console.log("erro ao salvar:", r.error.message); });
       }

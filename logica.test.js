@@ -5,7 +5,8 @@
 // ============================================================
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { normalizar, distancia, pontuar, dominou } = require("./logica.js");
+const { normalizar, distancia, pontuar, dominou,
+        ordemTemas, estrelasFase, faseDestravada, ganhouTrofeu } = require("./logica.js");
 
 // ---------- normalizar ----------
 test("normalizar tira acento, maiúscula e pontuação", function () {
@@ -66,4 +67,54 @@ test("dominar num idioma não vale para outro", function () {
 });
 test("palavra desconhecida não está dominada", function () {
   assert.strictEqual(dominou({}, "qualquer", "en"), false);
+});
+
+// ---------- fases: ordem dos temas ----------
+test("ordemTemas segue a ordem de id e remove duplicados", function () {
+  const palavras = [
+    { id: 3, tema: "animais" }, { id: 1, tema: "corpo" },
+    { id: 2, tema: "corpo" },   { id: 4, tema: "animais" },
+    { id: 5, tema: "cores" },
+  ];
+  assert.deepStrictEqual(ordemTemas(palavras), ["corpo", "animais", "cores"]);
+});
+test("ordemTemas deixa 'frases' fora da trilha", function () {
+  const palavras = [{ id: 1, tema: "animais" }, { id: 2, tema: "frases" }];
+  assert.deepStrictEqual(ordemTemas(palavras), ["animais"]);
+});
+
+// ---------- fases: estrelas (rodadas + acerto) ----------
+test("sem terminar nenhuma rodada: 0 estrelas", function () {
+  assert.strictEqual(estrelasFase(0, 0, 10), 0);
+});
+test("jogou mas ainda não cumpriu o critério: 1 estrela", function () {
+  assert.strictEqual(estrelasFase(1, 10, 10), 1);  // 100% mas só 1 rodada
+  assert.strictEqual(estrelasFase(2, 20, 20), 1);  // 100% mas só 2 rodadas
+  assert.strictEqual(estrelasFase(3, 25, 30), 1);  // 3 rodadas mas 83% (<90%)
+});
+test("3+ rodadas e 90%+: 2 estrelas (destrava a próxima)", function () {
+  assert.strictEqual(estrelasFase(3, 27, 30), 2);  // 90%
+  assert.strictEqual(estrelasFase(5, 47, 50), 2);  // 94%
+});
+test("3+ rodadas e 100%: 3 estrelas", function () {
+  assert.strictEqual(estrelasFase(3, 30, 30), 3);
+});
+
+// ---------- fases: desbloqueio (precisa de 2 estrelas) ----------
+test("a primeira fase está sempre destravada", function () {
+  assert.strictEqual(faseDestravada({}, ["corpo", "animais"], 0), true);
+});
+test("fase destrava só quando a anterior tem 2 estrelas", function () {
+  const temas = ["corpo", "animais", "cores"];
+  assert.strictEqual(faseDestravada({ corpo: 1 }, temas, 1), false);  // 1 estrela não basta
+  assert.strictEqual(faseDestravada({ corpo: 2 }, temas, 1), true);   // 2 estrelas -> animais abre
+  assert.strictEqual(faseDestravada({ corpo: 2 }, temas, 2), false);  // animais ainda não -> cores travada
+});
+
+// ---------- fases: troféu (todas com 2+ estrelas) ----------
+test("troféu só quando todas as fases têm pelo menos 2 estrelas", function () {
+  const temas = ["corpo", "animais"];
+  assert.strictEqual(ganhouTrofeu({ corpo: 3, animais: 2 }, temas), true);
+  assert.strictEqual(ganhouTrofeu({ corpo: 3, animais: 1 }, temas), false);
+  assert.strictEqual(ganhouTrofeu({}, []), false);
 });
