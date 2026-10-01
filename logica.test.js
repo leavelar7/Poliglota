@@ -6,7 +6,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
 const { normalizar, distancia, pontuar, dominou,
-        ordemTemas, estrelasFase, faseDestravada, ganhouTrofeu } = require("./logica.js");
+        ordemTemas, estrelasFase, progressoFase, faseDestravada, ganhouTrofeu } = require("./logica.js");
 
 // ---------- normalizar ----------
 test("normalizar tira acento, maiúscula e pontuação", function () {
@@ -98,6 +98,20 @@ test("3+ rodadas e 90%+: 2 estrelas (destrava a próxima)", function () {
 });
 test("3+ rodadas e 100%: 3 estrelas", function () {
   assert.strictEqual(estrelasFase(3, 30, 30), 3);
+});
+
+// ---------- fases: barra de progresso ----------
+test("progressoFase é 0 no começo e 1 ao passar (3 rodadas + 90%)", function () {
+  assert.strictEqual(progressoFase(0, 0, 10), 0);
+  assert.strictEqual(progressoFase(3, 27, 30), 1); // exatamente no critério
+});
+test("progressoFase enche bem depois de 1 rodada com 90%", function () {
+  const v = progressoFase(1, 9, 10); // metade acerto cheia + 1/3 das rodadas
+  assert.ok(v > 0.6 && v < 0.7, "esperado ~0.667, veio " + v);
+});
+test("progressoFase não chega a 1 se o acerto está baixo", function () {
+  const v = progressoFase(3, 21, 30); // 3 rodadas mas 70%
+  assert.ok(v < 1, "não deve completar com acerto baixo: " + v);
 });
 
 // ---------- fases: desbloqueio (precisa de 2 estrelas) ----------

@@ -91,6 +91,16 @@
     return 1;
   }
 
+  // quão perto de PASSAR a fase (0 a 1). passar = 3 rodadas E 90% de acerto.
+  // junta as duas metades: metade "rodadas" + metade "acerto". chega a 1
+  // exatamente quando as duas condições são cumpridas.
+  function progressoFase(rodadas, ok, total) {
+    const acc = total > 0 ? ok / total : 0;
+    const parteRodadas = Math.min(rodadas, 3) / 3;
+    const parteAcc = Math.min(acc / 0.90, 1);
+    return 0.5 * parteRodadas + 0.5 * parteAcc;
+  }
+
   // a fase i está destravada se é a primeira ou se a anterior já tem >= 2 estrelas.
   // `estrelas` é o mapa tema -> estrelas (de UM idioma).
   function faseDestravada(estrelas, temas, i) {
@@ -105,7 +115,7 @@
 
   const api = {
     normalizar: normalizar, distancia: distancia, pontuar: pontuar, dominou: dominou,
-    ordemTemas: ordemTemas, estrelasFase: estrelasFase,
+    ordemTemas: ordemTemas, estrelasFase: estrelasFase, progressoFase: progressoFase,
     faseDestravada: faseDestravada, ganhouTrofeu: ganhouTrofeu
   };
 
