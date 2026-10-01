@@ -967,6 +967,9 @@
       function elOuvido() { return document.getElementById(atual.tipo === "letra" ? "alfOuvido" : "ouvido"); }
       function elPular() { return document.getElementById(atual.tipo === "letra" ? "alfPular" : "pular"); }
       function alvoAtual() { return atual.tipo === "letra" ? atual.dados.exemplo : atual.dados[idioma]; }
+      // modo prática: só no ALEMÃO e em palavra curta (<=5 letras), onde o reconhecedor
+      // do navegador costuma não existir/errar. Inglês e italiano seguem normais.
+      function modoPratica() { return idioma === "de" && Logica.normalizar(alvoAtual()).length <= 5; }
 
       // ===== microfone =====
       // iPhone/iOS não tem reconhecimento de voz confiável no navegador -> modo sem microfone (o botão avança)
@@ -1007,10 +1010,19 @@
         function marcarOk() { if (atual.tipo === "palavra") rodadaOk[atual.dados.pt] = true; }
         if (s >= 0.55) { salvar("acertou"); marcarOk(); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
         else if (s >= 0.30) { salvar("quase"); marcarOk(); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
+        else if (modoPratica()) { salvar("quase"); marcarOk(); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); } // modo prática (alemão, palavra curta)
         else { salvar("errou"); registrarFalha("tenta de novo 🙂"); }
       }
 
       function registrarFalha(msg) {
+        // modo prática: não reprova palavra curta em alemão (nem quando o reconhecedor não ouve nada)
+        if (atual && atual.tipo === "palavra" && modoPratica()) {
+          rodadaOk[atual.dados.pt] = true;
+          salvar("quase");
+          elOuvido().textContent = "boa! 🎉";
+          setTimeout(proximo, 1000);
+          return;
+        }
         elOuvido().textContent = msg;
         tentativas++;
         if (tentativas >= 3) { elOuvido().textContent = "tudo bem, vamos pra próxima 👏"; setTimeout(proximo, 1000); }
