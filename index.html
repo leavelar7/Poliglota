@@ -664,7 +664,7 @@
           .forEach(function (id) { document.getElementById(id).classList.add("escondida"); });
       }
 
-      function nomeBonito(t) { return t.charAt(0).toUpperCase() + t.slice(1); }
+      function nomeBonito(t) { const s = t.replace(/_/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
 
       function abrirMapa(lang) {
         idiomaAtual = lang; idioma = lang;
