@@ -846,6 +846,18 @@
         document.getElementById("capa").classList.remove("escondida");
       }
 
+      // limpa automaticamente, uma única vez, um progresso salvo por regras antigas
+      // (antes da correção das estrelas / da junção de fases). Sem botão, invisível.
+      const PROGRESSO_VERSAO = "2";
+      (function migrarProgresso() {
+        try {
+          if (localStorage.getItem("poliglota_versao") !== PROGRESSO_VERSAO) {
+            localStorage.removeItem("poliglota_progresso");
+            localStorage.setItem("poliglota_versao", PROGRESSO_VERSAO);
+          }
+        } catch (e) {}
+      })();
+
       function tentarDeNovo() {
         comecar(idiomaEscolhido);
       }
