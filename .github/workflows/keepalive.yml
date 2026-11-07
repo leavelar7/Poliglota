@@ -1,0 +1,20 @@
+# Mantém o Supabase (plano grátis) ativo: faz uma leitura mínima todo dia.
+# Roda nos servidores do GitHub, não precisa do computador ligado.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "0 8 * * *"   # todo dia às 08:00 UTC
+  workflow_dispatch:         # permite rodar manualmente pelo site do GitHub
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            'https://alypvuijjtyddajtsvvb.supabase.co/rest/v1/palavras?select=id&limit=1' \
+            -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFseXB2dWlqanR5ZGRhanRzdnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMDYyNzksImV4cCI6MjEwNTU4MjI3OX0.CnUCE3Hr9nDsqRMwviEntBd07uLaiJ5oyad40QEEWmQ')
+          echo "HTTP $CODE"
+          test "$CODE" = "200"
