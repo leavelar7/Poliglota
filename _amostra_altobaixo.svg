@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+<defs>
+<filter id="wc" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="4" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="7"/><feGaussianBlur stdDeviation="0.5"/></filter>
+<clipPath id="card"><rect x="0" y="0" width="300" height="300" rx="18"/></clipPath>
+</defs>
+<g clip-path="url(#card)" filter="url(#wc)">
+<rect width="300" height="300" fill="#BFE3EC"/>
+<!-- colinas -->
+<path d="M0 210 Q80 170 160 205 Q240 235 300 195 L300 300 L0 300Z" fill="#9CC96B"/>
+<path d="M0 240 Q90 215 180 245 Q250 268 300 240 L300 300 L0 300Z" fill="#7FB255"/>
+<rect y="255" width="300" height="45" fill="#E7C067"/>
+<!-- arvores de fundo -->
+<g>
+<rect x="55" y="80" width="26" height="180" fill="#9B5A33"/>
+<ellipse cx="68" cy="80" rx="62" ry="55" fill="#3E7D4F"/>
+<rect x="220" y="95" width="24" height="165" fill="#9B5A33"/>
+<ellipse cx="232" cy="92" rx="55" ry="48" fill="#4C8A58"/>
+</g>
+<!-- girafa ALTO -->
+<g>
+<path d="M150 255 L150 150 Q150 95 178 70" fill="none" stroke="#E7A42E" stroke-width="30" stroke-linecap="round"/>
+<path d="M150 255 L150 150 Q150 95 178 70" fill="none" stroke="#C8821E" stroke-width="30" stroke-linecap="round" stroke-dasharray="4 26" opacity="0.5"/>
+<rect x="138" y="190" width="11" height="68" fill="#E7A42E"/>
+<rect x="165" y="190" width="11" height="68" fill="#D9941F"/>
+<ellipse cx="188" cy="62" rx="26" ry="20" fill="#F2B542"/>
+<ellipse cx="176" cy="72" rx="12" ry="10" fill="#F7D79A"/>
+<circle cx="183" cy="56" r="3.2" fill="#3A2A1A"/>
+<path d="M176 45 Q172 34 178 30 M198 44 Q202 33 196 29" stroke="#8A5A2C" stroke-width="5" stroke-linecap="round"/>
+<g fill="#C8821E"><circle cx="152" cy="130" r="7"/><circle cx="150" cy="170" r="7"/><circle cx="152" cy="205" r="6"/></g>
+</g>
+<!-- pedra + ratinho BAIXO -->
+<g>
+<ellipse cx="55" cy="248" rx="42" ry="26" fill="#A7ADB4"/>
+<ellipse cx="50" cy="238" rx="26" ry="18" fill="#BCC2C9"/>
+<ellipse cx="52" cy="222" rx="15" ry="11" fill="#CFD4DA"/>
+<circle cx="50" cy="212" r="8" fill="#C9CFD6"/>
+<circle cx="44" cy="206" r="5" fill="#DCE0E5"/><circle cx="56" cy="206" r="5" fill="#DCE0E5"/>
+<circle cx="49" cy="212" r="1.8" fill="#2A2A2A"/>
+</g>
+<!-- textos -->
+<text x="200" y="150" font-family="Poppins,sans-serif" font-weight="700" font-size="26" fill="#2A3A46">ALTO</text>
+<text x="200" y="168" font-family="Poppins,sans-serif" font-size="13" fill="#4B7EA8">TALL</text>
+<text x="18" y="185" font-family="Poppins,sans-serif" font-weight="700" font-size="24" fill="#2A3A46">BAIXO</text>
+<text x="18" y="202" font-family="Poppins,sans-serif" font-size="12" fill="#4B7EA8">SHORT</text>
+</g>
+</svg>
