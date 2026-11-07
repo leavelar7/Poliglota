@@ -6,7 +6,10 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
 const { normalizar, distancia, pontuar, dominou,
-        ordemTemas, estrelasFase, progressoFase, faseDestravada, ganhouTrofeu } = require("./logica.js");
+        ordemTemas, estrelasFase, progressoFase, faseDestravada, ganhouTrofeu,
+        intervaloRevisao, agendarRevisao, revisaoVencida, temasJogados, revisaoPendente } = require("./logica.js");
+
+const DIA = 86400000;
 
 // ---------- normalizar ----------
 test("normalizar tira acento, maiúscula e pontuação", function () {
@@ -135,4 +138,64 @@ test("troféu só quando todas as fases têm pelo menos 2 estrelas", function ()
   assert.strictEqual(ganhouTrofeu({ corpo: 3, animais: 2 }, temas), true);
   assert.strictEqual(ganhouTrofeu({ corpo: 3, animais: 1 }, temas), false);
   assert.strictEqual(ganhouTrofeu({}, []), false);
+});
+
+// ---------- revisão espaçada (Leitner) ----------
+test("intervaloRevisao cresce com a caixa e satura em 1..5", function () {
+  assert.strictEqual(intervaloRevisao(1), 1);
+  assert.strictEqual(intervaloRevisao(3), 7);
+  assert.strictEqual(intervaloRevisao(5), 35);
+  assert.strictEqual(intervaloRevisao(9), 35); // acima de 5 trava em 5
+  assert.strictEqual(intervaloRevisao(0), 1);  // abaixo de 1 trava em 1
+});
+test("agendarRevisao sobe de caixa ao acertar e marca a próxima data", function () {
+  const agora = 1000;
+  const r = agendarRevisao({ caixa: 2 }, true, agora);
+  assert.strictEqual(r.caixa, 3);
+  assert.strictEqual(r.prox, agora + 7 * DIA);
+});
+test("agendarRevisao começa na caixa 1 quando é a primeira vez e acerta", function () {
+  const r = agendarRevisao(undefined, true, 0);
+  assert.strictEqual(r.caixa, 2);          // 1 -> 2
+  assert.strictEqual(r.prox, 3 * DIA);
+});
+test("agendarRevisao volta pra caixa 1 ao errar", function () {
+  const r = agendarRevisao({ caixa: 5 }, false, 0);
+  assert.strictEqual(r.caixa, 1);
+  assert.strictEqual(r.prox, 1 * DIA);
+});
+test("agendarRevisao não passa da caixa 5", function () {
+  const r = agendarRevisao({ caixa: 5 }, true, 0);
+  assert.strictEqual(r.caixa, 5);
+});
+test("revisaoVencida: sem estado está vencida; com data futura não", function () {
+  assert.strictEqual(revisaoVencida(undefined, 1000), true);
+  assert.strictEqual(revisaoVencida({ caixa: 1, prox: 500 }, 1000), true);   // passou
+  assert.strictEqual(revisaoVencida({ caixa: 1, prox: 1500 }, 1000), false); // ainda não
+});
+test("temasJogados devolve só temas com rodadas >= 1", function () {
+  const prog = { corpo: { rodadas: 2 }, cores: { rodadas: 0 }, comida: { rodadas: 1 } };
+  assert.deepStrictEqual(temasJogados(prog).sort(), ["comida", "corpo"]);
+  assert.deepStrictEqual(temasJogados(undefined), []);
+});
+test("revisaoPendente: só palavras de fases jogadas e vencidas, mais antigas primeiro", function () {
+  const palavras = [
+    { pt: "mao", tema: "corpo" },
+    { pt: "pe", tema: "corpo" },
+    { pt: "gato", tema: "animais" },   // tema não jogado -> fora
+    { pt: "oi", tema: "frases" },       // frases nunca entra
+  ];
+  const progresso = { corpo: { rodadas: 1 } };   // só 'corpo' foi jogado
+  const agora = 10000;
+  const revisao = {
+    mao: { caixa: 1, prox: 5000 },   // vencida (passou)
+    pe:  { caixa: 2, prox: 50000 },  // ainda não vence
+  };
+  const pend = revisaoPendente(palavras, progresso, revisao, agora);
+  assert.deepStrictEqual(pend.map(function (w) { return w.pt; }), ["mao"]);
+});
+test("revisaoPendente: palavra nunca revisada de fase jogada já está pendente", function () {
+  const palavras = [{ pt: "mao", tema: "corpo" }];
+  const pend = revisaoPendente(palavras, { corpo: { rodadas: 1 } }, {}, 0);
+  assert.deepStrictEqual(pend.map(function (w) { return w.pt; }), ["mao"]);
 });

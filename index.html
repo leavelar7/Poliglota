@@ -287,6 +287,16 @@
         align-items: center; gap: 6px;
       }
       .btn-painel svg { width: 18px; height: 18px; }
+      .mapa-acoes { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+      .btn-revisao.tem-pendencia {
+        background: #FDEFD3; border-color: #E6C178; color: #8A6A2E;
+        animation: pulseRev 1.8s ease-in-out infinite;
+      }
+      .btn-revisao.tem-pendencia svg { stroke: #B07A3A; }
+      @keyframes pulseRev {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(217,154,78,0); }
+        50% { box-shadow: 0 0 0 5px rgba(217,154,78,0.18); }
+      }
 
       /* ===== Ajuste para telas de celular (largura <= 600px) ===== */
       @media (max-width: 600px) {
@@ -435,12 +445,20 @@
         <h2 id="mapaNome"></h2>
         <div class="contagem" id="mapaContagem"></div>
         <div class="mapa-trocar" id="mapaTrocar"></div>
-        <button class="btn-painel" onclick="abrirPainel(idiomaAtual)" aria-label="Ver progresso">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="20" x2="4" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="9"/>
-          </svg>
-          Progresso
-        </button>
+        <div class="mapa-acoes">
+          <button class="btn-painel" onclick="abrirPainel(idiomaAtual)" aria-label="Ver progresso">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="20" x2="4" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="9"/>
+            </svg>
+            Progresso
+          </button>
+          <button class="btn-painel btn-revisao" onclick="iniciarRevisao(idiomaAtual)" id="btnRevisao" aria-label="Revisar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 3 3 8 8 8"/>
+            </svg>
+            <span id="btnRevisaoTxt">Revisão</span>
+          </button>
+        </div>
       </div>
       <div class="trilha" id="trilha"></div>
     </div>
@@ -459,6 +477,26 @@
         <div style="text-align:center; margin-top:18px;">
           <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ===== SOBREPOSIÇÃO: FIM DA REVISÃO ===== -->
+    <div id="revFim" class="escondida">
+      <div class="trofeu-emoji">🔁</div>
+      <h3 id="revFimTexto"></h3>
+      <div class="botoes-fim">
+        <button class="destaque escondida" id="btnRevisarMais" onclick="iniciarRevisao(idiomaAtual)">Revisar mais</button>
+        <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
+      </div>
+    </div>
+
+    <!-- ===== SOBREPOSIÇÃO: REVISÃO EM DIA ===== -->
+    <div id="revVazia" class="escondida">
+      <div class="trofeu-emoji">✅</div>
+      <h3>Revisão em dia!</h3>
+      <p style="color:#9A876A; margin-top:-4px;">Nada pra revisar agora. Volte depois de brincar mais um pouco.</p>
+      <div class="botoes-fim">
+        <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
       </div>
     </div>
 
@@ -682,6 +720,8 @@
       let faseAtual = null;     // tema sendo jogado agora
       let rodadaContada = false;
       let rodadaOk = {};        // palavras acertadas NESTA rodada (pt -> true)
+      let modoRevisao = false;  // true quando a rodada é de revisão espaçada
+      let revOk = {};           // palavras acertadas NESTA revisão (pt -> true)
 
       // ---- progresso (quantas rodadas por fase) em localStorage ----
       function lerProgresso() {
@@ -691,6 +731,30 @@
       function salvarProgresso(p) {
         try { localStorage.setItem("poliglota_progresso", JSON.stringify(p)); } catch (e) {}
       }
+
+      // ---- revisão espaçada (caixas de Leitner) em localStorage ----
+      // estrutura: { idioma: { pt: { caixa, prox } } }
+      function lerRevisao() {
+        try { return JSON.parse(localStorage.getItem("poliglota_revisao") || "{}"); }
+        catch (e) { return {}; }
+      }
+      function salvarRevisao(r) {
+        try { localStorage.setItem("poliglota_revisao", JSON.stringify(r)); } catch (e) {}
+      }
+      // palavras pendentes de revisão de um idioma (objetos-palavra)
+      function pendentesRevisao(lang) {
+        const prog = lerProgresso()[lang] || {};
+        const rev = lerRevisao()[lang] || {};
+        return Logica.revisaoPendente(frases, prog, rev, Date.now());
+      }
+      // grava o resultado de uma palavra revisada (sobe/baixa de caixa)
+      function agendarPalavra(lang, pt, acertou) {
+        const r = lerRevisao();
+        if (!r[lang]) r[lang] = {};
+        r[lang][pt] = Logica.agendarRevisao(r[lang][pt], acertou, Date.now());
+        salvarRevisao(r);
+      }
+
       function rodadasDe(lang, tema) {
         const p = lerProgresso();
         return (p[lang] && p[lang][tema] && p[lang][tema].rodadas) || 0;
@@ -720,7 +784,7 @@
       }
 
       function esconderTudo() {
-        ["capa", "estudo", "alfabeto", "bandeira", "mapa", "fimRodada", "telaTrofeu", "painel"]
+        ["capa", "estudo", "alfabeto", "bandeira", "mapa", "fimRodada", "telaTrofeu", "painel", "revFim", "revVazia"]
           .forEach(function (id) { document.getElementById(id).classList.add("escondida"); });
       }
 
@@ -754,6 +818,11 @@
         const vencidas = temas.filter(function (t) { return estr[t] >= 2; }).length;
         document.getElementById("mapaContagem").textContent =
           vencidas + " de " + temas.length + " fases · " + totalEstrelas + " estrelas";
+
+        // contador de palavras pendentes de revisão
+        const nRev = pendentesRevisao(idiomaAtual).length;
+        document.getElementById("btnRevisaoTxt").textContent = nRev > 0 ? ("Revisão (" + nRev + ")") : "Revisão";
+        document.getElementById("btnRevisao").classList.toggle("tem-pendencia", nRev > 0);
 
         // botão de trocar idioma = bandeiras dos OUTROS idiomas (sem texto)
         const troca = document.getElementById("mapaTrocar");
@@ -839,7 +908,7 @@
       function jogarFase(tema) {
         const i = temas.indexOf(tema);
         if (!Logica.faseDestravada(estrelasMapa(idiomaAtual), temas, i)) return; // travada
-        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false; rodadaOk = {};
+        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false; rodadaOk = {}; modoRevisao = false;
         itens = montarFase(tema);
         if (!itens.length) return;
         fila = itens.map(function (_, k) { return k; });
@@ -850,6 +919,7 @@
       function jogarDeNovo() { jogarFase(faseAtual); }
 
       function fimDeRodada() {
+        if (modoRevisao) { fimRevisao(); return; }
         const antes = estrelasDe(idiomaAtual, faseAtual);
         // acurácia DESTA rodada = palavras acertadas / total de palavras da fase
         const totalPalavras = itens.length || 1;
@@ -955,6 +1025,43 @@
             '<span class="estrelas">' + svgEstrela(n >= 1) + svgEstrela(n >= 2) + svgEstrela(n >= 3) + '</span>';
           lista.appendChild(div);
         });
+      }
+
+      // ---- Revisão espaçada ----
+      const MAX_REVISAO = 10;   // no máximo 10 palavras por rodada de revisão
+
+      function iniciarRevisao(lang) {
+        idiomaAtual = lang || idiomaAtual; idioma = idiomaAtual;
+        const pend = pendentesRevisao(idiomaAtual).slice(0, MAX_REVISAO);
+        if (!pend.length) {         // nada vencido: tela de "em dia"
+          esconderTudo();
+          document.getElementById("revVazia").classList.remove("escondida");
+          return;
+        }
+        modoRevisao = true; revOk = {}; rodadaContada = true; // não conta como rodada de fase
+        itens = embaralhar(pend).map(function (w) { return { tipo: "palavra", dados: w }; });
+        fila = itens.map(function (_, k) { return k; });
+        p = 0; errados = []; revisando = false;
+        esconderTudo();
+        mostrarItem();
+      }
+
+      function fimRevisao() {
+        let acertou = 0;
+        itens.forEach(function (it) {
+          if (it.tipo !== "palavra") return;
+          const ok = !!revOk[it.dados.pt];
+          if (ok) acertou++;
+          agendarPalavra(idiomaAtual, it.dados.pt, ok);
+        });
+        document.getElementById("revFimTexto").textContent =
+          "Você revisou " + itens.length + " palavra" + (itens.length > 1 ? "s" : "") +
+          " · acertou " + acertou + "!";
+        const aindaTem = pendentesRevisao(idiomaAtual).length > 0;
+        document.getElementById("btnRevisarMais").classList.toggle("escondida", !aindaTem);
+        modoRevisao = false;
+        esconderTudo();
+        document.getElementById("revFim").classList.remove("escondida");
       }
 
       // limpa automaticamente, uma única vez, um progresso salvo por regras antigas
@@ -1127,7 +1234,9 @@
       function avaliar(textos) {
         const el = elOuvido();
         const s = Logica.pontuar(textos, alvoAtual()); // lógica pura de logica.js
-        function marcarOk() { if (atual.tipo === "palavra") rodadaOk[atual.dados.pt] = true; }
+        function marcarOk() {
+          if (atual.tipo === "palavra") { rodadaOk[atual.dados.pt] = true; revOk[atual.dados.pt] = true; }
+        }
         if (s >= 0.55) { salvar("acertou"); marcarOk(); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
         else if (s >= 0.30) { salvar("quase"); marcarOk(); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
         else { salvar("errou"); registrarFalha("tenta de novo 🙂"); }

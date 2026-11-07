@@ -112,10 +112,71 @@
     return temas.length > 0 && temas.every(function (t) { return (estrelas[t] || 0) >= 2; });
   }
 
+  // ---------------- revisão espaçada (método Leitner) ----------------
+  // cada palavra vive numa "caixa" (1 a 5). quanto maior a caixa, mais
+  // tempo até rever de novo. acertou -> sobe de caixa; errou -> volta pra 1.
+  const DIA_MS = 86400000;
+  const INTERVALOS = [1, 3, 7, 16, 35]; // dias de espera da caixa 1..5
+
+  // dias de espera de uma caixa (1..5).
+  function intervaloRevisao(caixa) {
+    const c = Math.max(1, Math.min(5, caixa));
+    return INTERVALOS[c - 1];
+  }
+
+  // novo estado {caixa, prox} de uma palavra depois de uma revisão.
+  // `atual` pode ser indefinido (primeira vez). `agora` em ms.
+  function agendarRevisao(atual, acertou, agora) {
+    const caixaAnterior = (atual && atual.caixa) || 1;
+    const caixa = acertou ? Math.min(caixaAnterior + 1, 5) : 1;
+    return { caixa: caixa, prox: agora + intervaloRevisao(caixa) * DIA_MS };
+  }
+
+  // uma palavra está "vencida" (pra rever) se nunca foi revisada
+  // ou se já passou da data marcada.
+  function revisaoVencida(estado, agora) {
+    if (!estado || !estado.prox) return true;
+    return estado.prox <= agora;
+  }
+
+  // temas que a criança já jogou ao menos uma vez (rodadas >= 1), num idioma.
+  // `progressoLang` é o mapa tema -> {rodadas, melhorAcc} de UM idioma.
+  function temasJogados(progressoLang) {
+    const out = [];
+    if (!progressoLang) return out;
+    for (const t in progressoLang) {
+      if ((progressoLang[t] && progressoLang[t].rodadas) >= 1) out.push(t);
+    }
+    return out;
+  }
+
+  // palavras pendentes de revisão: das fases já jogadas, as que estão vencidas.
+  // `palavras` = todas as palavras; `progressoLang` = progresso do idioma;
+  // `revisaoLang` = mapa pt -> {caixa, prox} do idioma; `agora` em ms.
+  // devolve os objetos-palavra, ordenados pela data mais antiga primeiro.
+  function revisaoPendente(palavras, progressoLang, revisaoLang, agora) {
+    const jogados = {};
+    temasJogados(progressoLang).forEach(function (t) { jogados[t] = true; });
+    const rev = revisaoLang || {};
+    const pend = palavras.filter(function (w) {
+      if (w.tema === "frases" || !jogados[w.tema]) return false;
+      return revisaoVencida(rev[w.pt], agora);
+    });
+    pend.sort(function (a, b) {
+      const pa = (rev[a.pt] && rev[a.pt].prox) || 0;
+      const pb = (rev[b.pt] && rev[b.pt].prox) || 0;
+      return pa - pb;
+    });
+    return pend;
+  }
+
   const api = {
     normalizar: normalizar, distancia: distancia, pontuar: pontuar, dominou: dominou,
     ordemTemas: ordemTemas, estrelasFase: estrelasFase, progressoFase: progressoFase,
-    faseDestravada: faseDestravada, ganhouTrofeu: ganhouTrofeu
+    faseDestravada: faseDestravada, ganhouTrofeu: ganhouTrofeu,
+    intervaloRevisao: intervaloRevisao, agendarRevisao: agendarRevisao,
+    revisaoVencida: revisaoVencida, temasJogados: temasJogados,
+    revisaoPendente: revisaoPendente
   };
 
   // no Node (testes) vira módulo; no navegador (app) vira window.Logica
