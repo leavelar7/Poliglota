@@ -31,7 +31,7 @@ async function fazerPalavras() {
   const dados = await ler('palavras');
   console.log('Palavras:', dados.length);
   for (const p of dados) {
-    for (const lang of idiomas) await gerarUm(p[lang], lang, p.id + '_' + lang + '.mp3');
+    for (const lang of idiomas) await gerarUm(p[lang], lang, 'audio/' + p.id + '_' + lang + '.mp3');
   }
 }
 
@@ -39,13 +39,14 @@ async function fazerAlfabeto() {
   const dados = await ler('alfabeto');
   console.log('Alfabeto:', dados.length, 'letras');
   for (const a of dados) {
-    const base = 'alf_' + a.idioma + '_' + a.ordem;
+    const base = 'audio/alf_' + a.idioma + '_' + a.ordem;
     await gerarUm(a.letra, a.idioma, base + '_letra.mp3');     // a letra falada
     await gerarUm(a.exemplo, a.idioma, base + '_palavra.mp3'); // a palavra de exemplo
   }
 }
 
 async function main() {
+  if (!fs.existsSync('audio')) fs.mkdirSync('audio'); // garante a pasta de áudio
   await fazerPalavras();
   await fazerAlfabeto();
   console.log('== pronto ==');

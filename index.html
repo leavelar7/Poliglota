@@ -1111,7 +1111,10 @@
         else mostrarPalavraCartao();
       }
 
-      function svgSrc(fig) { return fig && fig.slice(-4) === ".svg" ? fig : fig + ".svg"; }
+      function svgSrc(fig) {
+        const nome = (fig && fig.slice(-4) === ".svg") ? fig : fig + ".svg";
+        return "img/" + nome;   // imagens ficam na pasta img/
+      }
 
       function mostrarPalavraCartao() {
         document.getElementById("alfabeto").classList.add("escondida");
@@ -1151,7 +1154,7 @@
         }, 2400);
       }
 
-      function tocarArquivo(arquivo) { new Audio(arquivo).play().catch(function () {}); }
+      function tocarArquivo(arquivo) { new Audio("audio/" + arquivo).play().catch(function () {}); }
 
       // toca o som do item atual (palavra, ou palavra de exemplo da letra)
       function repetirSom() {
@@ -1159,7 +1162,7 @@
           tocarArquivo("alf_" + idioma + "_" + atual.dados.ordem + "_palavra.mp3");
         } else {
           const w = atual.dados;
-          new Audio(w.id + "_" + idioma + ".mp3").play().catch(function () { falarNavegador(w[idioma]); });
+          new Audio("audio/" + w.id + "_" + idioma + ".mp3").play().catch(function () { falarNavegador(w[idioma]); });
         }
       }
 

@@ -53,8 +53,20 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
   ├── alfabeto    (idioma, ordem, letra, exemplo, fig)
   └── tentativas  (per-attempt progress log)
 
-.svg images and .mp3 audio are served statically by Vercel.
+Images (img/) and audio (audio/) are served statically by Vercel.
 Game progress & spaced-repetition state live in the browser (localStorage).
+```
+
+### Project structure
+
+```
+├── index.html          # the whole app (HTML + CSS + vanilla JS)
+├── logica.js           # pure game logic (no DOM / no network)
+├── logica.test.js      # 36 unit tests for logica.js
+├── gerar_audios.js     # Node script: generates the pronunciation audio (gTTS)
+├── img/                # ~570 hand-drawn watercolor SVG flashcards
+├── audio/              # pre-generated .mp3 pronunciation files
+└── .github/workflows/  # GitHub Actions (daily keep-alive)
 ```
 
 The front-end loads the vocabulary from Supabase, builds the level map, shows image + word + translation, plays the audio, and listens to the child. The speech comparator normalizes the text and uses **Levenshtein distance** (dynamic programming) to accept approximate pronunciations.
