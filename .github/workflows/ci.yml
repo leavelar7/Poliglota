@@ -1,0 +1,19 @@
+# Roda a cada push e pull request: testes da lógica e checagem de sintaxe dos módulos.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Testes da lógica
+        run: npm test
+      - name: Sintaxe dos módulos
+        run: npm run checar

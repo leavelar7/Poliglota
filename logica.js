@@ -170,13 +170,97 @@
     return pend;
   }
 
+  // ---------------- sincronização entre aparelhos ----------------
+  // junta o progresso de dois lugares (este aparelho + nuvem) sem perder nada:
+  // fica com o MAIOR número de rodadas e a MELHOR acurácia de cada fase.
+  // formato: { idioma: { tema: { rodadas, melhorAcc } } }
+  function mesclarProgresso(a, b) {
+    const out = {};
+    [a || {}, b || {}].forEach(function (fonte) {
+      for (const lang in fonte) {
+        if (!out[lang]) out[lang] = {};
+        for (const tema in fonte[lang]) {
+          const x = fonte[lang][tema] || {};
+          const y = out[lang][tema] || { rodadas: 0, melhorAcc: 0 };
+          out[lang][tema] = {
+            rodadas: Math.max(y.rodadas || 0, x.rodadas || 0),
+            melhorAcc: Math.max(y.melhorAcc || 0, x.melhorAcc || 0)
+          };
+        }
+      }
+    });
+    return out;
+  }
+
+  // junta as caixas de revisão: para cada palavra vale o registro MAIS RECENTE
+  // (campo `em`, em ms). formato: { idioma: { pt: { caixa, prox, em } } }
+  function mesclarRevisao(a, b) {
+    const out = {};
+    [a || {}, b || {}].forEach(function (fonte) {
+      for (const lang in fonte) {
+        if (!out[lang]) out[lang] = {};
+        for (const pt in fonte[lang]) {
+          const x = fonte[lang][pt];
+          const y = out[lang][pt];
+          if (!x) continue;
+          if (!y || (x.em || 0) > (y.em || 0)) out[lang][pt] = x;
+        }
+      }
+    });
+    return out;
+  }
+
+  // ---------------- plano grátis / premium ----------------
+  // uma fase está liberada se a cobrança está desligada, se o plano é premium
+  // ou se o tema faz parte da amostra grátis.
+  function faseLiberadaNoPlano(temaGratis, plano, cobrancaAtiva) {
+    if (!cobrancaAtiva) return true;
+    if (plano === "premium") return true;
+    return !!temaGratis;
+  }
+
+  // resumo de um idioma: total de estrelas, fases vencidas (2+ estrelas) e troféu.
+  function resumoIdioma(estrelas, temas) {
+    let total = 0, vencidas = 0;
+    temas.forEach(function (t) {
+      const n = estrelas[t] || 0;
+      total += n;
+      if (n >= 2) vencidas++;
+    });
+    return { estrelas: total, vencidas: vencidas, fases: temas.length, trofeu: ganhouTrofeu(estrelas, temas) };
+  }
+
+  // as palavras em que a criança mais tropeça, a partir do registro de tentativas
+  // ([{palavras, idioma, resultado}]). só entra quem tem `min`+ tentativas.
+  function palavrasDificeis(tentativas, limite, min) {
+    if (limite === undefined) limite = 5;
+    if (min === undefined) min = 3;
+    const mapa = {};
+    (tentativas || []).forEach(function (t) {
+      const k = t.idioma + "|" + t.palavras;
+      if (!mapa[k]) mapa[k] = { palavra: t.palavras, idioma: t.idioma, ok: 0, total: 0 };
+      mapa[k].total++;
+      if (t.resultado === "acertou" || t.resultado === "quase") mapa[k].ok++;
+    });
+    return Object.keys(mapa).map(function (k) {
+      const m = mapa[k];
+      m.taxa = m.ok / m.total;
+      return m;
+    }).filter(function (m) { return m.total >= min && m.taxa < 0.7; })
+      .sort(function (x, y) { return x.taxa - y.taxa || y.total - x.total; })
+      .slice(0, limite);
+  }
+
   const api = {
     normalizar: normalizar, distancia: distancia, pontuar: pontuar, dominou: dominou,
     ordemTemas: ordemTemas, estrelasFase: estrelasFase, progressoFase: progressoFase,
     faseDestravada: faseDestravada, ganhouTrofeu: ganhouTrofeu,
     intervaloRevisao: intervaloRevisao, agendarRevisao: agendarRevisao,
     revisaoVencida: revisaoVencida, temasJogados: temasJogados,
-    revisaoPendente: revisaoPendente
+    revisaoPendente: revisaoPendente,
+    mesclarProgresso: mesclarProgresso, mesclarRevisao: mesclarRevisao,
+    faseLiberadaNoPlano: faseLiberadaNoPlano, resumoIdioma: resumoIdioma,
+    palavrasDificeis: palavrasDificeis
   };
 
   // no Node (testes) vira módulo; no navegador (app) vira window.Logica

@@ -199,3 +199,55 @@ test("revisaoPendente: palavra nunca revisada de fase jogada já está pendente"
   const pend = revisaoPendente(palavras, { corpo: { rodadas: 1 } }, {}, 0);
   assert.deepStrictEqual(pend.map(function (w) { return w.pt; }), ["mao"]);
 });
+
+// ---------- sincronização (mesclar) ----------
+const { mesclarProgresso, mesclarRevisao, faseLiberadaNoPlano, resumoIdioma, palavrasDificeis } = require("./logica.js");
+
+test("mesclarProgresso: fica com o maior de cada lado", function () {
+  const local = { en: { corpo: { rodadas: 3, melhorAcc: 0.8 } } };
+  const nuvem = { en: { corpo: { rodadas: 2, melhorAcc: 1 }, casa: { rodadas: 1, melhorAcc: 0.5 } }, de: { corpo: { rodadas: 1, melhorAcc: 0.2 } } };
+  assert.deepStrictEqual(mesclarProgresso(local, nuvem), {
+    en: { corpo: { rodadas: 3, melhorAcc: 1 }, casa: { rodadas: 1, melhorAcc: 0.5 } },
+    de: { corpo: { rodadas: 1, melhorAcc: 0.2 } }
+  });
+});
+test("mesclarProgresso: aceita lados vazios e não altera as entradas", function () {
+  const local = { en: { corpo: { rodadas: 1, melhorAcc: 0.5 } } };
+  assert.deepStrictEqual(mesclarProgresso(local, undefined), local);
+  assert.deepStrictEqual(mesclarProgresso(null, null), {});
+  assert.deepStrictEqual(local, { en: { corpo: { rodadas: 1, melhorAcc: 0.5 } } });
+});
+test("mesclarRevisao: vale o registro mais recente", function () {
+  const local = { en: { mao: { caixa: 1, prox: 10, em: 200 }, pe: { caixa: 2, prox: 20, em: 50 } } };
+  const nuvem = { en: { mao: { caixa: 4, prox: 99, em: 100 }, pe: { caixa: 3, prox: 30, em: 60 }, olho: { caixa: 1, prox: 5, em: 1 } } };
+  const m = mesclarRevisao(local, nuvem);
+  assert.strictEqual(m.en.mao.caixa, 1);  // local é mais novo
+  assert.strictEqual(m.en.pe.caixa, 3);   // nuvem é mais nova
+  assert.strictEqual(m.en.olho.caixa, 1); // só existe na nuvem
+});
+
+// ---------- plano ----------
+test("faseLiberadaNoPlano: cobrança desligada libera tudo", function () {
+  assert.strictEqual(faseLiberadaNoPlano(false, "gratis", false), true);
+});
+test("faseLiberadaNoPlano: com cobrança, grátis só joga a amostra", function () {
+  assert.strictEqual(faseLiberadaNoPlano(true, "gratis", true), true);
+  assert.strictEqual(faseLiberadaNoPlano(false, "gratis", true), false);
+  assert.strictEqual(faseLiberadaNoPlano(false, "premium", true), true);
+});
+
+// ---------- resumo e palavras difíceis ----------
+test("resumoIdioma soma estrelas, fases vencidas e troféu", function () {
+  assert.deepStrictEqual(resumoIdioma({ a: 3, b: 1 }, ["a", "b", "c"]), { estrelas: 4, vencidas: 1, fases: 3, trofeu: false });
+  assert.strictEqual(resumoIdioma({ a: 2, b: 3 }, ["a", "b"]).trofeu, true);
+});
+test("palavrasDificeis: ordena pela menor taxa de acerto e ignora poucas tentativas", function () {
+  const t = [];
+  function add(p, r, n) { for (let i = 0; i < n; i++) t.push({ palavras: p, idioma: "en", resultado: r }); }
+  add("mao", "errou", 3); add("mao", "acertou", 1);   // 25%
+  add("pe", "errou", 2); add("pe", "quase", 2);       // 50%
+  add("olho", "acertou", 5);                          // 100% -> fora
+  add("boca", "errou", 2);                            // só 2 tentativas -> fora
+  const d = palavrasDificeis(t, 5, 3);
+  assert.deepStrictEqual(d.map(function (x) { return x.palavra; }), ["mao", "pe"]);
+});
