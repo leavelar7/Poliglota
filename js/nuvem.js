@@ -6,6 +6,12 @@ import { SUPABASE_URL, SUPABASE_CHAVE } from "./config.js";
 // então guardamos a informação aqui, antes de criar o cliente.
 export const veioDeRecuperacao = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));
 
+// Link de e-mail vencido ou já usado: o Supabase devolve error_code no endereço.
+export const erroNoLink = (function () {
+  const p = new URLSearchParams(location.hash.slice(1) + "&" + location.search.slice(1));
+  return p.get("error_code") || p.get("error") || null;
+})();
+
 export const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_CHAVE, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });

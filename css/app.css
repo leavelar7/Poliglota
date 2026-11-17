@@ -166,6 +166,7 @@ body.app { overscroll-behavior-y: none; }
 .adulto { font-size: 1rem; }
 .bloco { background: var(--papel-claro); border: 1px solid var(--papel-sombra); border-radius: var(--raio); padding: 20px; margin-top: 14px; }
 .bloco h2 { font-size: 1.25rem; margin-bottom: 10px; }
+.aviso-link { background: #FDEFD3; border-color: var(--ocre); }
 .bloco h3 { font-size: 1rem; margin: 16px 0 6px; }
 .bloco > :last-child { margin-bottom: 0; }
 .abas { display: flex; gap: 6px; margin: 14px 0; padding: 4px; background: var(--papel-sombra); border-radius: 999px; }

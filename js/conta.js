@@ -1,5 +1,5 @@
 // conta.js — conta do responsável, perfis de criança e plano.
-import { db, veioDeRecuperacao } from "./nuvem.js";
+import { db, veioDeRecuperacao, erroNoLink } from "./nuvem.js";
 import { estado, lerPref, salvarPref } from "./estado.js";
 import * as guarda from "./guarda.js";
 
@@ -67,6 +67,14 @@ export async function iniciarConta(aoMudar) {
   const r = await db.auth.getSession();
   estado.sessao = (r.data && r.data.session) || null;
   if (veioDeRecuperacao && estado.sessao) estado.recuperandoSenha = true;
+  if (erroNoLink) {
+    estado.avisoLink = (erroNoLink === "otp_expired" || erroNoLink === "access_denied")
+      ? "Este link já foi usado ou venceu. Cada link do e-mail vale uma vez só. Peça um novo aqui embaixo."
+      : "Não deu para abrir o link do e-mail. Peça um novo aqui embaixo.";
+  }
+  if (veioDeRecuperacao || erroNoLink) {
+    try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  }
   await carregarConta();
 
   db.auth.onAuthStateChange(function (evento, sessao) {
