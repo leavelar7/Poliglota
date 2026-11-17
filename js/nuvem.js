@@ -1,6 +1,11 @@
 // nuvem.js — cliente do Supabase (a biblioteca vem de /vendor, carregada antes dos módulos)
 import { SUPABASE_URL, SUPABASE_CHAVE } from "./config.js";
 
+// O link de "trocar senha" chega com type=recovery no endereço. A biblioteca lê e apaga
+// esse trecho logo ao ser criada, antes de o app começar a escutar os eventos de login,
+// então guardamos a informação aqui, antes de criar o cliente.
+export const veioDeRecuperacao = /(^|[#&?])type=recovery(&|$)/.test(location.hash + "&" + location.search.slice(1));
+
 export const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_CHAVE, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });

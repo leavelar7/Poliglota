@@ -7,7 +7,7 @@
     "test": "node --test logica.test.js",
     "checar": "for f in js/*.js js/telas/*.js sw.js; do node --check \"$f\" || exit 1; done",
     "servir": "node testes/navegador/servidor.js \"$PWD\" 4173",
-    "teste:navegador": "node testes/navegador/jogo.js && node testes/navegador/conta.js",
+    "teste:navegador": "node testes/navegador/jogo.js && node testes/navegador/conta.js && node testes/navegador/recuperacao.js",
     "audios": "node gerar_audios.js"
   },
   "dependencies": {

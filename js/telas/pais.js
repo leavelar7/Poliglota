@@ -117,7 +117,7 @@ function blocoNovaSenha() {
   const senha = campo("nova-senha", "Nova senha (8 ou mais caracteres)", { type: "password", autocomplete: "new-password", required: true, minlength: 8 });
   const erro = el("p", { class: "erro-campo", role: "alert" });
   const enviar = el("button", { class: "btn btn-principal btn-largo", type: "submit", text: "Salvar nova senha" });
-  return secao("Escolha uma nova senha", [el("form", { class: "form", onsubmit: function (ev) {
+  return secao("Escolha uma nova senha", [el("form", { class: "form", novalidate: true, onsubmit: function (ev) {
     ev.preventDefault();
     if (senha.input.value.length < 8) { erro.textContent = "A senha precisa ter pelo menos 8 caracteres."; return; }
     executar(enviar, erro, async function () { await conta.definirSenha(senha.input.value); avisar("Senha alterada"); render(); });
