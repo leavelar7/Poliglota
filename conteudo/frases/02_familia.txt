@@ -1,0 +1,7 @@
+# Família
+7|Eu amo a mamãe.|I love Mom.|Ich hab Mama lieb.|Voglio bene alla mamma.|A mamãe lê uma história antes de dormir.|Mom reads a story before bedtime.|Mama liest vor dem Schlafen eine Geschichte vor.|La mamma legge una storia prima di dormire.
+8|O papai está aqui.|Dad is here.|Papa ist hier.|Papà è qui.|O papai me leva ao parque no domingo.|Dad takes me to the park on Sunday.|Papa geht am Sonntag mit mir in den Park.|Papà mi porta al parco la domenica.
+9|A vovó faz bolo.|Grandma makes cake.|Oma backt Kuchen.|La nonna fa la torta.|A vovó faz um bolo de chocolate para mim.|Grandma makes a chocolate cake for me.|Oma backt einen Schokoladenkuchen für mich.|La nonna fa una torta al cioccolato per me.
+10|O vovô canta comigo.|Grandpa sings with me.|Opa singt mit mir.|Il nonno canta con me.|O vovô conta histórias engraçadas no jardim.|Grandpa tells funny stories in the garden.|Opa erzählt im Garten lustige Geschichten.|Il nonno racconta storie divertenti in giardino.
+11|O bebê está dormindo.|The baby is sleeping.|Das Baby schläft.|Il bambino dorme.|O bebê ri quando eu faço uma careta.|The baby laughs when I make a funny face.|Das Baby lacht, wenn ich eine Grimasse mache.|Il bambino ride quando faccio una smorfia.
+12|Eu amo minha família.|I love my family.|Ich liebe meine Familie.|Amo la mia famiglia.|Minha família janta junto todas as noites.|My family has dinner together every night.|Meine Familie isst jeden Abend zusammen.|La mia famiglia cena insieme ogni sera.
