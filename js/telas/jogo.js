@@ -1,7 +1,7 @@
 // telas/jogo.js — a rodada: cartões de palavra e de letra, fala, revisão e fim de rodada.
 import { COBRANCA_ATIVA, LOCALE, NOME_IDIOMA, MAX_REVISAO, NOTA_ACERTOU, NOTA_QUASE } from "../config.js";
 import { estado, ir, registrarRota } from "../estado.js";
-import { vocab, slugsDosTemas, palavrasDoTema, letrasDoIdioma, figSrc, audioPalavra, audioLetra } from "../dados.js";
+import { vocab, slugsDosTemas, palavrasDoTema, letrasDoIdioma, figSrc, audioPalavra, audioLetra, audioFrase } from "../dados.js";
 import * as guarda from "../guarda.js";
 import { registrarTentativa } from "../conta.js";
 import { tocar, parar, falarNavegador, preCarregar } from "../som.js";
@@ -13,7 +13,7 @@ const L = window.Logica;
 
 let modo = "fase";       // "fase" | "revisao" | "alfabeto"
 let tema = null;         // slug da fase em jogo
-let itens = [];          // [{tipo: "palavra" | "letra", dados}]
+let itens = [];          // [{tipo: "palavra" | "letra" | "frase", dados, palavra?}]
 let fila = [];           // índices de itens nesta passada
 let p = 0;
 let atual = null;
@@ -36,6 +36,8 @@ function embaralhar(a) {
 function usaMic() { return temReconhecimento && !estado.semMic; }
 function lang() { return estado.idioma; }
 function alvo() { return atual.tipo === "letra" ? atual.dados.exemplo : atual.dados[lang()]; }
+// chave da revisão: a palavra em português, ou "frase:<id>:<nível>"
+function chave(it) { return it.tipo === "frase" ? L.chaveFrase(it.dados.palavra_id, it.dados.nivel) : it.dados.pt; }
 
 // depois de `ms`, roda fn — a não ser que o cartão já tenha mudado
 function depois(ms, fn) {
@@ -51,6 +53,7 @@ function comecar(novoModo, novosItens) {
   const l = lang(), urls = [];
   itens.forEach(function (it) {
     if (it.tipo === "palavra") { urls.push(figSrc(it.dados.fig), audioPalavra(it.dados, l)); }
+    else if (it.tipo === "frase") { urls.push(figSrc(it.palavra.fig), audioFrase(it.dados, l)); }
     else { urls.push(audioLetra(it.dados, "letra"), audioLetra(it.dados, "palavra")); if (it.dados.fig) urls.push(figSrc(it.dados.fig)); }
   });
   preCarregar(urls);
@@ -66,13 +69,16 @@ function jogarFase(slug) {
 }
 
 function iniciarRevisao() {
-  const pend = pendentesRevisao(lang()).slice(0, MAX_REVISAO);
+  const p = pendentesRevisao(lang());
+  const sel = L.montarRevisao(p.palavras, p.frases, MAX_REVISAO, 4);
+  const pend = sel.palavras.map(function (w) { return { tipo: "palavra", dados: w }; })
+    .concat(sel.frases.map(function (f) { return { tipo: "frase", dados: f, palavra: vocab.palavraPorId[f.palavra_id] }; }));
   if (!pend.length) {
     ir("aviso", { figura: "/img/estrela.svg", titulo: "Revisão em dia!", texto: "Nada para revisar agora. Volte depois de brincar mais um pouco.",
       botoes: [{ rotulo: "Voltar ao mapa", principal: true, acao: function () { ir("mapa"); } }] });
     return;
   }
-  comecar("revisao", embaralhar(pend).map(function (w) { return { tipo: "palavra", dados: w }; }));
+  comecar("revisao", embaralhar(pend));
 }
 
 function iniciarAlfabeto() {
@@ -98,7 +104,11 @@ function mostrarItem() {
   if (usaMic()) { principal.innerHTML = ICONE.mic; principal.setAttribute("aria-label", "Falar a palavra"); }
   else { principal.innerHTML = ICONE.certo; principal.setAttribute("aria-label", "Já repeti, próxima palavra"); }
 
-  if (atual.tipo === "letra") mostrarLetra(); else mostrarPalavra();
+  $("selo-frase").hidden = atual.tipo !== "frase";
+  $("palavra").classList.toggle("frase", atual.tipo === "frase");
+  if (atual.tipo === "letra") mostrarLetra();
+  else if (atual.tipo === "frase") mostrarFrase();
+  else mostrarPalavra();
 }
 
 function mostrarPalavra() {
@@ -110,6 +120,22 @@ function mostrarPalavra() {
   $("palavra").textContent = w[lang()];
   $("palavra").lang = lang();
   $("traducao").textContent = w.pt;
+  tocarAtual();
+}
+
+// frase aplicada: a figura da palavra que a criança já aprendeu, e a frase que a usa
+function mostrarFrase() {
+  const f = atual.dados, w = atual.palavra;
+  $("letra-grande").hidden = true;
+  $("cartao-corpo").hidden = false;
+  const fig = $("figura");
+  if (w && w.fig) { fig.src = figSrc(w.fig); fig.hidden = false; } else fig.hidden = true;
+  const selo = $("selo-frase");
+  selo.className = "selo-frase nivel-" + f.nivel;
+  selo.setAttribute("aria-label", f.nivel === 1 ? "Frase simples" : "Frase completa");
+  $("palavra").textContent = f[lang()];
+  $("palavra").lang = lang();
+  $("traducao").textContent = f.pt;
   tocarAtual();
 }
 
@@ -137,7 +163,8 @@ function mostrarLetra() {
 function tocarAtual() {
   if (!atual) return;
   const texto = alvo(), l = lang();
-  const src = atual.tipo === "letra" ? audioLetra(atual.dados, "palavra") : audioPalavra(atual.dados, l);
+  const src = atual.tipo === "letra" ? audioLetra(atual.dados, "palavra")
+    : atual.tipo === "frase" ? audioFrase(atual.dados, l) : audioPalavra(atual.dados, l);
   tocar(src).catch(function () { falarNavegador(texto, LOCALE[l]); });
 }
 
@@ -148,10 +175,14 @@ function falar(texto, classe) {
 }
 
 function marcarOk() {
-  if (atual.tipo === "palavra") ok[atual.dados.pt] = true;
+  if (atual.tipo !== "letra") ok[chave(atual)] = true;
 }
 
-function rotulo() { return atual.tipo === "letra" ? "letra " + atual.dados.letra : atual.dados.pt; }
+function rotulo() {
+  if (atual.tipo === "letra") return "letra " + atual.dados.letra;
+  if (atual.tipo === "frase") return atual.dados.pt;
+  return atual.dados.pt;
+}
 
 // ---------------- botão principal: falar (ou "já repeti") ----------------
 function aoApertarPrincipal() {
@@ -187,9 +218,12 @@ function aoApertarPrincipal() {
 }
 
 function avaliar(alts) {
-  const nota = L.pontuar(alts, alvo());
-  if (nota >= NOTA_ACERTOU) { registrarTentativa(rotulo(), lang(), "acertou"); marcarOk(); falar("Boa!", "boa"); depois(1000, proximo); }
-  else if (nota >= NOTA_QUASE) { registrarTentativa(rotulo(), lang(), "quase"); marcarOk(); falar("Quase! Valeu.", "boa"); depois(1100, proximo); }
+  // frase: conta as palavras ditas; a nota de corte é mais baixa porque a frase é longa
+  const ehFrase = atual.tipo === "frase";
+  const nota = ehFrase ? L.pontuarFrase(alts, alvo()) : L.pontuar(alts, alvo());
+  const corteAcertou = ehFrase ? 0.6 : NOTA_ACERTOU, corteQuase = ehFrase ? 0.4 : NOTA_QUASE;
+  if (nota >= corteAcertou) { registrarTentativa(rotulo(), lang(), "acertou"); marcarOk(); falar("Boa!", "boa"); depois(1000, proximo); }
+  else if (nota >= corteQuase) { registrarTentativa(rotulo(), lang(), "quase"); marcarOk(); falar("Quase! Valeu.", "boa"); depois(1100, proximo); }
   else { registrarTentativa(rotulo(), lang(), "errou"); registrarFalha("Tente de novo."); }
 }
 
@@ -277,16 +311,20 @@ function fimDeFase() {
 function fimRevisao() {
   const l = lang();
   let acertou = 0;
+  let frases = 0;
   itens.forEach(function (it) {
-    const certo = !!ok[it.dados.pt];
+    const k = chave(it), certo = !!ok[k];
     if (certo) acertou++;
-    guarda.agendarPalavra(l, it.dados.pt, certo);
+    if (it.tipo === "frase") frases++;
+    guarda.agendarPalavra(l, k, certo);
   });
-  const resta = pendentesRevisao(l).length > 0;
+  const p = pendentesRevisao(l);
+  const resta = p.palavras.length + p.frases.length > 0;
   const botoes = [{ rotulo: "Voltar ao mapa", principal: !resta, acao: function () { ir("mapa"); } }];
   if (resta) botoes.unshift({ rotulo: "Revisar mais", principal: true, acao: iniciarRevisao });
   ir("aviso", { figura: "/img/estrela.svg",
-    titulo: "Você revisou " + itens.length + (itens.length > 1 ? " palavras" : " palavra") + " e acertou " + acertou + "!",
+    titulo: "Você revisou " + itens.length + (itens.length > 1 ? " cartões" : " cartão") + " e acertou " + acertou + "!",
+    texto: frases ? (frases > 1 ? frases + " deles eram frases." : "Um deles era uma frase.") : "",
     botoes: botoes });
 }
 

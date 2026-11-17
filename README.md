@@ -24,6 +24,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 - **Speech recognition**: the child repeats the word and the app advances on its own, tolerant of imperfect pronunciation (Levenshtein-based fuzzy matching).
 - **Native pronunciation audio** for all three languages, pre-generated for consistent quality across devices.
 - **Progress dashboard**: stars, cleared stages, and trophies per language.
+- **Applied sentences**: every word has a simple and a fuller sentence (1,052 sentences in en/de/it with Portuguese translation). A word learned in review unlocks its simple sentence; the simple one learned unlocks the fuller one. Each sentence has its own Leitner box.
 - **Parent accounts and child profiles**: up to 4 children per account, each with their own map; progress syncs across devices (offline-first, merged without loss).
 - **Parents' area** behind a parental gate: per-child report (stages, stars, words due, hardest words), listen-and-repeat mode without microphone, data export and account deletion (LGPD).
 - **Installable PWA** that keeps working offline for stages already opened.
@@ -31,7 +32,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 - **~570 illustrated concepts** across 29 themes (one image serves all three languages); goal: 1000.
 - **German with articles** (der/die/das) baked into every noun.
 - **Responsive** layout (works on phones).
-- **43 automated unit tests** over the pure game logic, browser smoke tests, and CI on every push.
+- **50 automated unit tests** over the pure game logic, browser smoke tests, and CI on every push.
 
 ## Tech stack
 
@@ -57,6 +58,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
    ▼
 [ Supabase / PostgreSQL — RLS on every table ]
   ├── palavras, alfabeto, temas   public read-only (vocabulary, stage names/order, free vs premium)
+  ├── frases_aplicadas            public read-only (simple and fuller sentence per word)
   ├── responsaveis                one row per account (plan)
   ├── perfis                      child profiles, owned by the account
   ├── progresso_fases, revisoes   per-profile progress and Leitner boxes
@@ -80,13 +82,14 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 │   ├── ui.js             # DOM helpers, icons, dialogs, parental gate
 │   └── telas/            # mapa.js, jogo.js, pais.js
 ├── logica.js             # pure game logic (no DOM / no network)
-├── logica.test.js        # 43 unit tests
+├── logica.test.js        # 50 unit tests
 ├── sw.js, manifest.webmanifest, vercel.json
 ├── supabase/migrations/  # schema + RLS, in order
 ├── testes/navegador/     # browser smoke tests (Puppeteer, mocked Supabase)
+├── conteudo/frases/      # applied sentences, one text file per stage (source of truth)
 ├── gerar_audios.js       # generates the pronunciation audio (gTTS)
 ├── img/, audio/, fonts/, icons/, vendor/
-└── .github/workflows/    # ci.yml, keepalive.yml
+└── .github/workflows/    # ci.yml, keepalive.yml, audios.yml (generates missing audio)
 ```
 
 ### Free vs. paid (not charging yet)
@@ -95,7 +98,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 
 ## Engineering decisions
 
-- **Logic separated from UI, and unit-tested.** All pure game logic (scoring, stars, stage gating, Leitner scheduling, sync merging) lives in `logica.js` with no DOM or network, so it is covered by **43 tests** (`logica.test.js`) that run without a browser. The modules in `js/` only wire that logic to the screen and the database.
+- **Logic separated from UI, and unit-tested.** All pure game logic (scoring, stars, stage gating, Leitner scheduling, sync merging) lives in `logica.js` with no DOM or network, so it is covered by **50 tests** (`logica.test.js`) that run without a browser. The modules in `js/` only wire that logic to the screen and the database.
 - **Offline-first progress.** Every result is written to the device first and pushed to the cloud afterwards; when two devices disagree, stages keep the highest count and best accuracy, and each review card keeps its most recent state.
 - **Security in the database, not in the client.** The anon key is public; Row Level Security makes vocabulary read-only and scopes profiles and progress to the signed-in parent.
 - **Pre-generated audio, not device TTS.** Guarantees quality and consistency across phones (avoids iOS reading everything with an English accent when native voices are missing).
@@ -109,7 +112,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 ## Tests
 
 ```bash
-npm test                 # 43 unit tests of the pure logic, no dependencies
+npm test                 # 50 unit tests of the pure logic, no dependencies
 npm run checar           # syntax check of every module
 
 # browser smoke tests (need Chrome; set CHROME=/path/to/chrome if it is not at /usr/bin/google-chrome)
@@ -180,9 +183,10 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 - **Alemão com artigos** (der/die/das) em todos os substantivos.
 - **Conta dos pais e perfis de criança** (até 4), com progresso sincronizado entre aparelhos.
 - **Área dos pais** com relatório por criança, modo sem microfone, exportação e exclusão de dados (LGPD).
+- **Frases aplicadas:** cada palavra tem uma frase simples e uma mais completa (1.052 frases). A palavra aprendida na revisão libera a frase simples; a simples aprendida libera a completa.
 - **App instalável (PWA)** que funciona offline nas fases já abertas.
 - **Página de apresentação, política de privacidade e termos de uso.**
-- Layout **responsivo**, **43 testes automatizados** da lógica, testes de navegador e CI a cada push.
+- Layout **responsivo**, **50 testes automatizados** da lógica, testes de navegador e CI a cada push.
 
 ## Tecnologias
 
@@ -200,7 +204,7 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 
 ## Decisões de engenharia
 
-- **Lógica separada da interface e testada.** Toda a lógica pura do jogo (pontuação, estrelas, desbloqueio de fases, agendamento Leitner, junção de progresso entre aparelhos) fica em `logica.js`, sem DOM nem rede, coberta por **43 testes** (`logica.test.js`) que rodam sem navegador. Os módulos em `js/` só conectam essa lógica à tela e ao banco.
+- **Lógica separada da interface e testada.** Toda a lógica pura do jogo (pontuação, estrelas, desbloqueio de fases, agendamento Leitner, junção de progresso entre aparelhos) fica em `logica.js`, sem DOM nem rede, coberta por **50 testes** (`logica.test.js`) que rodam sem navegador. Os módulos em `js/` só conectam essa lógica à tela e ao banco.
 - **Áudio pré-gerado, não voz do aparelho.** Garante qualidade e consistência entre celulares.
 - **Áudio identificado pelo `id` da palavra, não pela imagem.** Como uma imagem é reutilizada por vários conceitos, a chave por imagem causava colisão de áudio.
 - **Estrela pela melhor rodada.** Um erro antigo nunca trava a terceira estrela pra sempre.
@@ -209,7 +213,7 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 ## Testes
 
 ```bash
-npm test                 # 43 testes da lógica pura, sem dependências
+npm test                 # 50 testes da lógica pura, sem dependências
 npm run checar           # sintaxe de todos os módulos
 npm run servir &         # servidor local em http://localhost:4173 (o app fica em /app)
 npm run teste:navegador  # testes de navegador (precisam do Chrome e de `npm install`)

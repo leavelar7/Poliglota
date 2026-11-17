@@ -3,7 +3,7 @@
 import { db, buscarTudo } from "./nuvem.js";
 
 const CHAVE = "pp:vocab";
-export const vocab = { palavras: [], letras: [], temas: [] };
+export const vocab = { palavras: [], letras: [], temas: [], frases: [], ptPorId: {}, palavraPorId: {} };
 
 function nomeBonito(slug) {
   const s = String(slug).replace(/_/g, " ");
@@ -13,6 +13,9 @@ function nomeBonito(slug) {
 function aplicar(bruto) {
   vocab.palavras = bruto.palavras || [];
   vocab.letras = bruto.letras || [];
+  vocab.frases = bruto.frases || [];
+  vocab.ptPorId = {}; vocab.palavraPorId = {};
+  vocab.palavras.forEach(function (w) { vocab.ptPorId[w.id] = w.pt; vocab.palavraPorId[w.id] = w; });
   let temas = (bruto.temas || []).filter(function (t) { return t.ativo !== false; })
     .sort(function (a, b) { return a.ordem - b.ordem; });
   if (!temas.length) {
@@ -31,14 +34,16 @@ function aplicar(bruto) {
 }
 
 async function buscar() {
-  const [palavras, letras, temas] = await Promise.all([
+  const [palavras, letras, temas, frases] = await Promise.all([
     buscarTudo(function () { return db.from("palavras").select("id,pt,en,de,it,fig,tema").order("id"); }),
     buscarTudo(function () { return db.from("alfabeto").select("idioma,ordem,letra,exemplo,exemplo_pt,fig").order("idioma").order("ordem"); }),
     buscarTudo(function () { return db.from("temas").select("slug,nome,ordem,icone,gratis,ativo").order("ordem"); })
+      .catch(function () { return []; }),
+    buscarTudo(function () { return db.from("frases_aplicadas").select("palavra_id,nivel,pt,en,de,it").order("palavra_id").order("nivel"); })
       .catch(function () { return []; })
   ]);
   if (!palavras.length) throw new Error("vocabulário vazio");
-  const bruto = { palavras: palavras, letras: letras, temas: temas, em: Date.now() };
+  const bruto = { palavras: palavras, letras: letras, temas: temas, frases: frases, em: Date.now() };
   try { localStorage.setItem(CHAVE, JSON.stringify(bruto)); } catch (e) {}
   return bruto;
 }
@@ -48,7 +53,7 @@ async function buscar() {
 export async function carregarVocabulario() {
   let cache = null;
   try { cache = JSON.parse(localStorage.getItem(CHAVE) || "null"); } catch (e) {}
-  if (cache && cache.palavras && cache.palavras.length) {
+  if (cache && cache.palavras && cache.palavras.length && cache.frases) {
     aplicar(cache);
     buscar().catch(function () {});
     return;
@@ -65,4 +70,5 @@ export function figSrc(fig) {
   return "/img/" + (fig.slice(-4) === ".svg" ? fig : fig + ".svg");
 }
 export function audioPalavra(w, lang) { return "/audio/" + w.id + "_" + lang + ".mp3"; }
+export function audioFrase(f, lang) { return "/audio/f" + f.palavra_id + "_" + f.nivel + "_" + lang + ".mp3"; }
 export function audioLetra(l, parte) { return "/audio/alf_" + l.idioma + "_" + l.ordem + "_" + parte + ".mp3"; }
