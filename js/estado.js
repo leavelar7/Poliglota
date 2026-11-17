@@ -6,7 +6,8 @@ export const estado = {
   perfil: null,        // perfil em uso (objeto) ou null = visitante neste aparelho
   plano: "gratis",
   semMic: false,       // preferência: jogar sem microfone
-  recuperandoSenha: false
+  recuperandoSenha: false,
+  avisoLink: null      // texto para a área dos pais quando um link de e-mail falhou
 };
 
 // ---- navegação entre telas, sem os módulos precisarem se importar em círculo ----

@@ -39,6 +39,12 @@ function abrir() {
 
 function render() {
   const raiz = limpar($("pais-conteudo"));
+  if (estado.avisoLink) {
+    raiz.appendChild(el("section", { class: "bloco aviso-link", role: "alert" }, [
+      el("h2", { text: "Link expirado" }), el("p", { text: estado.avisoLink })
+    ]));
+    estado.avisoLink = null;   // aparece uma vez
+  }
   if (estado.recuperandoSenha) { raiz.appendChild(blocoNovaSenha()); return; }
   if (!estado.sessao) {
     raiz.appendChild(aguardandoEmail ? blocoConfirmeEmail() : blocoEntrar());

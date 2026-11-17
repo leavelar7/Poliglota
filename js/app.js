@@ -40,7 +40,7 @@ async function carregar() {
     try { await iniciarConta(aoMudarConta); } catch (e) { console.warn("conta indisponível:", e); }
   }
 
-  if (estado.recuperandoSenha || (estado.sessao && !estado.perfis.length)) { ir("pais"); return; }
+  if (estado.recuperandoSenha || estado.avisoLink || (estado.sessao && !estado.perfis.length)) { ir("pais"); return; }
   // quem já escolheu um idioma cai direto no mapa (menos toques para a criança)
   const ultimo = lerPref("idioma", null);
   if (ultimo && estado.perfis.length < 2) ir("mapa", ultimo);

@@ -49,6 +49,15 @@ const dados = require("./dados.json");
   await page.reload({ waitUntil: "networkidle0" }); await espera(800);
   passo("confirmação de cadastro vai para criar perfil", (await page.$eval("#pais-conteudo h2", (e) => e.textContent)) === "Crianças");
 
+  // link vencido ou já usado (o Supabase devolve error_code no endereço)
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(BASE + "/app#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired", { waitUntil: "networkidle0" });
+  await page.reload({ waitUntil: "networkidle0" }); await espera(800);   // trocar só o "#" não recarrega a página
+  passo("link vencido abre a área dos pais", await page.$eval("#tela-pais", (e) => !e.hidden));
+  passo("explica que o link venceu", (await page.$eval("#pais-conteudo", (e) => e.textContent)).includes("já foi usado ou venceu"));
+  passo("limpa o erro do endereço", !(await page.evaluate(() => location.hash.includes("error"))));
+  passo("mostra o formulário para pedir outro", !!(await page.$("#conta-email")));
+
   console.log(erros.length ? "ERROS: " + erros.join(" | ") : "sem erros no console");
   await browser.close();
 })().catch((e) => { console.error(e); process.exit(1); });

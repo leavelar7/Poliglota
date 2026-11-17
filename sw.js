@@ -1,8 +1,10 @@
 // sw.js — deixa o app instalável e utilizável sem internet.
-//  - "casca" (páginas, CSS, JS, fontes): guardada na instalação; atualiza por trás.
+//  - "casca" (páginas, CSS, JS, fontes): guardada na instalação. Com internet, sempre
+//    busca a versão nova primeiro (para uma correção valer já na próxima abertura);
+//    sem internet, ou se a rede demorar mais de 4 s, usa a cópia guardada.
 //  - imagens e áudios: guardados conforme a criança joga (e no pré-carregamento da fase).
 //  - Supabase e qualquer outro domínio: passam direto, sem cache.
-const VERSAO = "v3.0.0";
+const VERSAO = "v3.0.2";
 const CASCA = "pp-casca-" + VERSAO;
 const MIDIA = "pp-midia-v1";   // imagens e áudios sobrevivem às atualizações do app
 
@@ -59,11 +61,16 @@ async function midia(req) {
 
 async function casca(req) {
   const cache = await caches.open(CASCA);
-  const guardado = await cache.match(req, { ignoreSearch: req.mode === "navigate" });
   const daRede = fetch(req).then(function (resp) {
     if (resp.ok) cache.put(req, resp.clone());
     return resp;
   });
+  const limite = new Promise(function (resolver) { setTimeout(resolver, 4000); });
+  try {
+    const resp = await Promise.race([daRede, limite]);
+    if (resp) return resp;
+  } catch (e) { /* sem rede: cai para a cópia guardada */ }
+  const guardado = await cache.match(req, { ignoreSearch: req.mode === "navigate" });
   if (guardado) { daRede.catch(function () {}); return guardado; }
   return daRede;
 }
