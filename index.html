@@ -1,1281 +1,159 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background-color: #F1E8D5;
-        font-family: Georgia, serif;
-      }
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pequeno Poliglota: inglês, alemão e italiano para quem ainda não lê</title>
+  <meta name="description" content="A criança vê a figura, ouve a palavra e repete. Mais de 550 palavras ilustradas em aquarela, em inglês, alemão e italiano, sem nada para ler e sem anúncios.">
+  <meta name="theme-color" content="#F1E8D5">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="Pequeno Poliglota">
+  <meta property="og:description" content="Inglês, alemão e italiano para crianças que ainda não leem.">
+  <meta property="og:image" content="/icons/icon-512.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/fredoka.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <script src="/js/site-redirecionar.js"></script>
+</head>
+<body class="site">
+  <a class="pular-nav" href="#conteudo">Pular para o conteúdo</a>
 
-      .tela {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
+  <header class="topo">
+    <a class="marca" href="/?site">
+      <img src="/icons/globo.svg" alt="" width="40" height="40">
+      Pequeno Poliglota
+    </a>
+    <a class="btn btn-principal" href="/app">Abrir o app</a>
+  </header>
 
-      .escondida { display: none !important; }
+  <main id="conteudo">
 
-      /* ===== tela de carregando / erro ===== */
-      #carregando, #erro {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #F1E8D5;
-        z-index: 50;
-        text-align: center;
-        padding: 24px;
-        box-sizing: border-box;
-      }
-      .spinner {
-        width: 64px;
-        height: 64px;
-        border: 7px solid #E7D6B4;
-        border-top-color: #D99A4E;
-        border-radius: 50%;
-        animation: girar 0.9s linear infinite;
-        margin-bottom: 22px;
-      }
-      @keyframes girar { to { transform: rotate(360deg); } }
-      #carregando p, #erro p {
-        font-size: 22px;
-        color: #6E5B3A;
-        margin: 6px 0;
-      }
-      #erro .emoji { font-size: 54px; margin-bottom: 10px; }
-      #erro .btn-idioma { margin-top: 20px; cursor: pointer; }
-
-      /* ===== mapa de fases ===== */
-      #mapa { min-height: 100vh; padding: 0 0 40px; box-sizing: border-box; display: block; }
-      .mapa-topo { text-align: center; padding: 16px 16px 4px; }
-      .mapa-topo #mapaFlag svg { width: 54px; height: auto; }
-      .mapa-topo h2 { margin: 4px 0 0; font-size: 22px; color: #6E5B3A; font-weight: normal; }
-      .mapa-topo .contagem { font-size: 14px; color: #9A876A; margin-top: 2px; }
-      .mapa-trocar { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
-      .mapa-trocar button {
-        background: #F6EEDD; border: 2px solid #D9C7A0; border-radius: 12px;
-        padding: 5px 10px; cursor: pointer; line-height: 0;
-      }
-      .mapa-trocar button svg { width: 38px; height: auto; display: block; }
-      .trilha { position: relative; max-width: 420px; margin: 0 auto; padding: 14px 0 10px; }
-      .trilha svg.caminho { position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none; overflow: visible; }
-      .fase { position: relative; z-index: 1; width: 120px; margin: 16px 0; text-align: center; }
-      .fase.esq { margin-left: 28px; }
-      .fase.dir { margin-left: auto; margin-right: 28px; }
-      .bolha {
-        width: 94px; height: 94px; border-radius: 50%; margin: 0 auto;
-        display: flex; align-items: center; justify-content: center;
-        background: #F6EEDD; border: 4px solid #D9C7A0; box-shadow: 0 3px 0 #D9C7A0;
-        cursor: pointer;
-      }
-      .bolha img { width: 66px; height: 66px; pointer-events: none; }
-      .fase.aberta .bolha { border-color: #D99A4E; box-shadow: 0 3px 0 #C77F34; }
-      .fase.atual .bolha { border-color: #D99A4E; box-shadow: 0 0 0 4px #F6DDB8, 0 3px 0 #C77F34; animation: pulso 1.4s ease-in-out infinite; }
-      @keyframes pulso { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.06);} }
-      .fase.travada .bolha { filter: grayscale(0.75); opacity: 0.5; cursor: default; }
-      .fase .nome { font-size: 15px; margin-top: 5px; color: #6E5B3A; }
-      .fase.travada .nome { color: #AC9C7E; }
-      .estrelas { height: 22px; margin-bottom: 3px; }
-      .estrelas svg { width: 22px; height: 22px; margin: 0 1px; vertical-align: middle; }
-      .st-cheia { fill: #F2B705; stroke: #D99A4E; stroke-width: 6; }
-      .st-vazia { fill: #E7DAC0; stroke: #D9C7A0; stroke-width: 6; }
-      .cadeado { font-size: 22px; }
-      .trofeu-fase { width: 100%; text-align: center; margin-top: 26px; }
-      .trofeu-bolha {
-        width: 110px; height: 110px; border-radius: 50%; margin: 0 auto;
-        display: flex; align-items: center; justify-content: center; font-size: 54px;
-        background: #FBF3DF; border: 4px dashed #C9A24A;
-      }
-      .trofeu-fase.travado .trofeu-bolha { filter: grayscale(0.6); opacity: 0.65; }
-      .trofeu-fase .nome { font-size: 16px; color: #6E5B3A; margin-top: 4px; }
-
-      /* ===== fim de rodada / troféu (sobreposições) ===== */
-      #fimRodada, #telaTrofeu {
-        position: fixed; inset: 0; background: rgba(241,232,213,0.97); z-index: 60;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        text-align: center; padding: 24px; box-sizing: border-box;
-      }
-      #fimRodada h3, #telaTrofeu h3 { font-size: 24px; color: #6E5B3A; font-weight: normal; margin: 4px 0; }
-      #fimRodada .detalhe { font-size: 15px; color: #9A876A; margin: 6px 0 2px; }
-      #fimRodada .dica { font-size: 14px; color: #B08C5A; margin: 4px 0 10px; max-width: 300px; }
-      .barra {
-        width: 260px; max-width: 76%; height: 18px; margin: 14px auto 4px;
-        background: #E7DAC0; border-radius: 10px; overflow: hidden;
-      }
-      .barra-fill {
-        height: 100%; width: 0; border-radius: 10px;
-        background: linear-gradient(90deg, #F2B705, #D99A4E);
-        transition: width 0.7s ease;
-      }
-      .estrelas-grande svg { width: 54px; height: 54px; margin: 0 3px; }
-      .estrelas-grande .pop { animation: pop 0.6s ease; }
-      @keyframes pop { 0%{ transform: scale(0);} 70%{ transform: scale(1.3);} 100%{ transform: scale(1);} }
-      .botoes-fim { margin-top: 14px; display: flex; gap: 10px; flex-wrap: nowrap; justify-content: center; }
-      .botoes-fim button {
-        font-family: Georgia, serif; font-size: 17px; padding: 12px 20px; border-radius: 16px;
-        border: 3px solid #D9C7A0; background: #F6EEDD; color: #6E5B3A; cursor: pointer;
-      }
-      .botoes-fim button.destaque { border-color: #D99A4E; background: #FBEAD0; }
-      .botoes-fim button.icone { width: 62px; height: 62px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; }
-      .botoes-fim button.icone svg { width: 30px; height: 30px; }
-      #telaTrofeu .trofeu-emoji { font-size: 92px; animation: pop 0.8s ease; }
-
-      .globo { width: 190px; height: 190px; }
-
-      .titulo {
-        font-size: 40px;
-        color: #5C4A38;
-        letter-spacing: 0.5px;
-        margin: 8px 0 0;
-      }
-
-      .tagline {
-        font-size: 18px;
-        color: #A08E76;
-        font-style: italic;
-        margin: 6px 0 0;
-      }
-
-      .escolha {
-        font-size: 16px;
-        color: #8C7B64;
-        margin: 28px 0 14px;
-      }
-
-      .idiomas { display: flex; flex-direction: column; gap: 14px; }
-
-      .btn-idioma {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        width: 260px;
-        padding: 14px 22px;
-        background-color: #F6EEDD;
-        border: 2px solid #E4D6BA;
-        border-radius: 18px;
-        font-family: Georgia, serif;
-        font-size: 22px;
-        color: #5C4A38;
-        cursor: pointer;
-      }
-      .btn-idioma:hover { background-color: #F0E4CC; }
-
-      .flag { width: 40px; height: 27px; flex: none; }
-
-      .cartao {
-        background-color: #F6EEDD;
-        border: 2px solid #E4D6BA;
-        border-radius: 34px;
-        padding: 40px 70px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(92, 74, 56, 0.12);
-      }
-
-      .figura { width: 220px; height: 220px; }
-
-      .palavra {
-        font-size: 52px;
-        color: #5C4A38;
-        letter-spacing: 1px;
-        margin-top: 6px;
-      }
-
-      .mic {
-        margin-top: 18px;
-        width: 64px;
-        height: 64px;
-        border: none;
-        border-radius: 50%;
-        background-color: #D99A4E;
-        cursor: pointer;
-        box-shadow: 0 6px 16px rgba(92, 74, 56, 0.18);
-      }
-      .mic:hover { background-color: #CE8C3E; }
-
-      .ouvido {
-        margin-top: 14px;
-        min-height: 22px;
-        font-size: 18px;
-        font-style: italic;
-        color: #A08E76;
-      }
-
-      .som {
-        margin-top: 10px;
-        width: 46px;
-        height: 46px;
-        border: none;
-        border-radius: 50%;
-        background-color: #EFE1C4;
-        cursor: pointer;
-      }
-      .som:hover { background-color: #E7D6B4; }
-
-      .pular {
-        margin-top: 12px;
-        padding: 8px 18px;
-        background: none;
-        border: none;
-        font-family: Georgia, serif;
-        font-size: 16px;
-        font-style: italic;
-        color: #A08E76;
-        text-decoration: underline;
-        cursor: pointer;
-      }
-
-      .moldura-bandeira {
-        width: 150px;
-        border: 3px solid #E4D6BA;
-        border-radius: 16px;
-        overflow: hidden;
-        line-height: 0;
-        box-shadow: 0 10px 26px rgba(92, 74, 56, 0.16);
-      }
-      .moldura-bandeira svg { width: 100%; height: auto; display: block; }
-
-      .letra-grande {
-        font-size: 150px;
-        line-height: 1;
-        color: #5C4A38;
-        font-family: Georgia, serif;
-      }
-      .alf-trad {
-        font-size: 18px;
-        font-style: italic;
-        color: #A08E76;
-        margin-top: 2px;
-      }
-
-      /* ===== Painel de progresso ===== */
-      .painel-topo { text-align: center; padding: 16px 16px 4px; }
-      .painel-topo h2 { margin: 4px 0 2px; font-size: 22px; color: #6E5B3A; font-weight: normal; }
-      .painel-conteudo { max-width: 560px; margin: 0 auto; padding: 8px 16px 40px; }
-      .cards-idioma { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 10px 0 18px; }
-      .card-idioma {
-        background: #FFFDF8; border: 2px solid #ECE1C9; border-radius: 16px;
-        padding: 12px 10px; width: 150px; text-align: center; cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,.05);
-      }
-      .card-idioma.sel { border-color: #D99A4E; background: #FFF6E6; }
-      .card-idioma svg.flag { width: 40px; height: auto; }
-      .card-idioma .ci-nome { font-size: 15px; color: #6E5B3A; margin: 4px 0 6px; }
-      .card-idioma .ci-num { font-size: 13px; color: #9A876A; line-height: 1.5; }
-      .card-idioma .ci-num b { color: #6E5B3A; }
-      .painel-detalhe h3 { text-align: center; font-size: 16px; color: #9A876A; font-weight: normal; margin: 6px 0 10px; }
-      .linha-tema {
-        display: flex; align-items: center; gap: 10px;
-        background: #FFFDF8; border: 1px solid #ECE1C9; border-radius: 12px;
-        padding: 8px 12px; margin-bottom: 7px;
-      }
-      .linha-tema.venceu { background: #F3FBEF; border-color: #CDE7BE; }
-      .linha-tema .lt-nome { flex: 1; font-size: 15px; color: #6E5B3A; }
-      .linha-tema .estrelas { height: 20px; margin: 0; white-space: nowrap; }
-      .linha-tema .estrelas svg { width: 20px; height: 20px; }
-      .btn-voltar-painel {
-        background: #ECE1C9; color: #6E5B3A; border: none; border-radius: 20px;
-        padding: 8px 20px; font-size: 15px; cursor: pointer; font-family: inherit;
-      }
-      .btn-painel {
-        margin-top: 12px; background: #FFF6E6; color: #6E5B3A;
-        border: 2px solid #ECE1C9; border-radius: 20px; padding: 7px 18px;
-        font-size: 14px; cursor: pointer; font-family: inherit; display: inline-flex;
-        align-items: center; gap: 6px;
-      }
-      .btn-painel svg { width: 18px; height: 18px; }
-      .mapa-acoes { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-      .btn-revisao.tem-pendencia {
-        background: #FDEFD3; border-color: #E6C178; color: #8A6A2E;
-        animation: pulseRev 1.8s ease-in-out infinite;
-      }
-      .btn-revisao.tem-pendencia svg { stroke: #B07A3A; }
-      @keyframes pulseRev {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(217,154,78,0); }
-        50% { box-shadow: 0 0 0 5px rgba(217,154,78,0.18); }
-      }
-
-      /* ===== Ajuste para telas de celular (largura <= 600px) ===== */
-      @media (max-width: 600px) {
-        .tela { padding: 20px; box-sizing: border-box; }
-
-        .globo { width: 150px; height: 150px; }
-        .titulo { font-size: 32px; }
-        .tagline { font-size: 16px; }
-
-        .btn-idioma {
-          width: 100%;
-          max-width: 320px;
-          font-size: 20px;
-          box-sizing: border-box;
-        }
-
-        .cartao {
-          padding: 28px 22px;
-          border-radius: 26px;
-          max-width: 90vw;
-          box-sizing: border-box;
-        }
-
-        .figura { width: 60vw; max-width: 220px; height: auto; }
-
-        .palavra { font-size: 40px; word-break: break-word; }
-
-        .letra-grande { font-size: 110px; }
-
-        .moldura-bandeira { width: 120px; }
-      }
-    </style>
-  </head>
-  <body>
-
-    <!-- filtros e recortes compartilhados (invisível) -->
-    <svg style="position:absolute; width:0; height:0" aria-hidden="true">
-      <defs>
-        <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
-          <feGaussianBlur stdDeviation="0.5"/>
-        </filter>
-        <clipPath id="globeClip"><circle cx="0" cy="0" r="76"/></clipPath>
-      </defs>
-    </svg>
-
-    <!-- ===== TELA: CARREGANDO ===== -->
-    <div id="carregando" class="tela escondida">
-      <div class="spinner"></div>
-      <p>Carregando…</p>
-    </div>
-
-    <!-- ===== TELA: ERRO / SEM INTERNET ===== -->
-    <div id="erro" class="tela escondida">
-      <div class="emoji">🐢</div>
-      <p>Ops! Não consegui carregar.</p>
-      <p>Verifica a internet e tenta de novo.</p>
-      <button class="btn-idioma" onclick="tentarDeNovo()">Tentar de novo</button>
-    </div>
-
-    <!-- ===== TELA 1: CAPA ===== -->
-    <div id="capa" class="tela">
-
-      <svg class="globo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <g transform="translate(100,100)">
-          <circle cx="0" cy="0" r="78" fill="#90AEB8" filter="url(#wc)"/>
-          <g clip-path="url(#globeClip)">
-            <g fill="#93A87C">
-              <path d="M-6 -58 Q16 -52 12 -30 Q26 -18 16 2 Q24 20 4 36 Q-8 54 -16 36 Q-24 22 -14 6 Q-30 -10 -16 -28 Q-22 -46 -6 -58 Z" filter="url(#wc)"/>
-              <path d="M34 -30 Q62 -24 56 -2 Q48 10 34 4 Q28 -12 34 -30 Z" filter="url(#wc)"/>
-              <path d="M-64 -24 Q-52 -16 -56 4 Q-62 20 -68 8 Q-72 -10 -64 -24 Z" filter="url(#wc)"/>
-            </g>
-            <g fill="none" stroke="#7E9CA6" stroke-width="1.2" opacity="0.45">
-              <path d="M-74 -32 Q0 -22 74 -32"/>
-              <path d="M-78 2 Q0 14 78 2"/>
-              <path d="M-74 34 Q0 44 74 34"/>
-              <path d="M0 -78 Q12 0 0 78"/>
-              <path d="M0 -78 Q-12 0 0 78"/>
-              <path d="M-40 -66 Q-32 0 -40 66"/>
-              <path d="M40 -66 Q32 0 40 66"/>
-            </g>
-          </g>
-          <ellipse cx="-30" cy="-34" rx="18" ry="10" fill="#C0D4D9" opacity="0.35" filter="url(#wc)"/>
-          <path d="M-58 -48 Q0 -90 58 -48" fill="none" stroke="#B7A98E" stroke-width="1.6" stroke-dasharray="3 5" opacity="0.6" stroke-linecap="round"/>
-          <g transform="translate(52,-56) rotate(32)" filter="url(#wc)">
-            <path d="M16 0 L-14 -3 Q-18 -3 -18 0 Q-18 3 -14 3 Z" fill="#CE8C5A"/>
-            <path d="M-2 -1 L-10 -11 L3 -2 Z" fill="#BE7C4E"/>
-            <path d="M-2 1 L-10 11 L3 2 Z" fill="#BE7C4E"/>
-            <path d="M-14 -1 L-20 -6 L-12 -2 Z" fill="#BE7C4E"/>
-          </g>
-        </g>
-      </svg>
-
-      <h1 class="titulo">Pequeno Poliglota</h1>
-      <p class="tagline">um idioma por vez</p>
-      <p class="escolha">escolha um idioma</p>
-
-      <div class="idiomas">
-        <button class="btn-idioma" onclick="comecar('en')">
-          <svg class="flag" viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg">
-            <g filter="url(#wc)">
-              <rect x="0" y="0" width="42" height="28" fill="#EFE7D2"/>
-              <rect x="0" y="0" width="42" height="4" fill="#C0483B"/>
-              <rect x="0" y="8" width="42" height="4" fill="#C0483B"/>
-              <rect x="0" y="16" width="42" height="4" fill="#C0483B"/>
-              <rect x="0" y="24" width="42" height="4" fill="#C0483B"/>
-              <rect x="0" y="0" width="20" height="16" fill="#3B5486"/>
-              <g fill="#EFE7D2">
-                <circle cx="6" cy="5" r="1.3"/><circle cx="14" cy="5" r="1.3"/>
-                <circle cx="10" cy="10" r="1.3"/><circle cx="6" cy="13" r="1.3"/><circle cx="14" cy="13" r="1.3"/>
-              </g>
-            </g>
-          </svg>
-          <span>Inglês</span>
-        </button>
-
-        <button class="btn-idioma" onclick="comecar('de')">
-          <svg class="flag" viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg">
-            <g filter="url(#wc)">
-              <rect x="0" y="0" width="42" height="9.3" fill="#3A3A3A"/>
-              <rect x="0" y="9.3" width="42" height="9.3" fill="#C0483B"/>
-              <rect x="0" y="18.6" width="42" height="9.4" fill="#E3B23C"/>
-            </g>
-          </svg>
-          <span>Alemão</span>
-        </button>
-
-        <button class="btn-idioma" onclick="comecar('it')">
-          <svg class="flag" viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg">
-            <g filter="url(#wc)">
-              <rect x="0" y="0" width="14" height="28" fill="#5E9E6A"/>
-              <rect x="14" y="0" width="14" height="28" fill="#EFE7D2"/>
-              <rect x="28" y="0" width="14" height="28" fill="#C0483B"/>
-            </g>
-          </svg>
-          <span>Italiano</span>
-        </button>
+    <section class="heroi">
+      <div class="heroi-texto">
+        <h1>Inglês, alemão e italiano para quem ainda não sabe ler</h1>
+        <p class="lide">A criança vê a figura, ouve a palavra e repete em voz alta. Não há texto para ler, menu para entender nem anúncio para fechar.</p>
+        <a class="btn btn-principal btn-grande" href="/app">Começar a brincar</a>
+        <p class="nota">Abre no navegador do celular, tablet ou computador. Grátis durante o lançamento, sem cartão.</p>
       </div>
-    </div>
 
-    <!-- ===== TELA: MAPA DE FASES ===== -->
-    <div id="mapa" class="escondida">
-      <div class="mapa-topo">
-        <div id="mapaFlag"></div>
-        <h2 id="mapaNome"></h2>
-        <div class="contagem" id="mapaContagem"></div>
-        <div class="mapa-trocar" id="mapaTrocar"></div>
-        <div class="mapa-acoes">
-          <button class="btn-painel" onclick="abrirPainel(idiomaAtual)" aria-label="Ver progresso">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="20" x2="4" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="9"/>
-            </svg>
-            Progresso
-          </button>
-          <button class="btn-painel btn-revisao" onclick="iniciarRevisao(idiomaAtual)" id="btnRevisao" aria-label="Revisar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 3 3 8 8 8"/>
-            </svg>
-            <span id="btnRevisaoTxt">Revisão</span>
-          </button>
+      <!-- o cartão de verdade, com os áudios de verdade -->
+      <div class="demo" id="demo">
+        <div class="cartao-demo">
+          <div class="demo-moldura"><img id="demo-figura" src="/img/gato.svg" alt="Ilustração em aquarela de um gato" width="220" height="220"></div>
+          <p class="demo-palavra" id="demo-palavra" lang="en" aria-live="polite">cat</p>
+          <p class="demo-traducao" id="demo-traducao">gato</p>
+          <div class="demo-idiomas" role="group" aria-label="Ouvir em outro idioma">
+            <button type="button" class="demo-idioma ativo" data-demo="en" aria-pressed="true">Inglês</button>
+            <button type="button" class="demo-idioma" data-demo="de" aria-pressed="false">Alemão</button>
+            <button type="button" class="demo-idioma" data-demo="it" aria-pressed="false">Italiano</button>
+          </div>
+        </div>
+        <p class="demo-legenda">Toque num idioma para ouvir. <button type="button" class="link" id="demo-outra">Ver outra palavra</button></p>
+      </div>
+    </section>
+
+    <section class="faixa" aria-labelledby="t-rodada">
+      <h2 id="t-rodada">Como é uma rodada</h2>
+      <ol class="passos">
+        <li>
+          <img src="/img/ouvir.svg" alt="" width="120" height="120" loading="lazy">
+          <h3>Vê e ouve</h3>
+          <p>Aparece uma aquarela e o app fala a palavra no idioma escolhido. A criança pode ouvir de novo quantas vezes quiser.</p>
+        </li>
+        <li>
+          <img src="/img/falar.svg" alt="" width="120" height="120" loading="lazy">
+          <h3>Repete em voz alta</h3>
+          <p>Ela toca no microfone e fala. O app aceita pronúncia de criança: quem chega perto já avança.</p>
+        </li>
+        <li>
+          <img src="/img/estrela.svg" alt="" width="120" height="120" loading="lazy">
+          <h3>Ganha estrelas</h3>
+          <p>Cada fase vale até três estrelas. Com duas, a próxima fase do mapa se abre.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section class="faixa dentro" aria-labelledby="t-dentro">
+      <div class="dentro-texto">
+        <h2 id="t-dentro">Mais de 550 palavras ilustradas em aquarela</h2>
+        <p>São 28 fases com o vocabulário do dia a dia de uma criança: família, corpo, bichos, comida, cores, brinquedos, sentimentos, a casa e a escola. A mesma figura serve aos três idiomas, então ela liga a palavra à coisa, e não à tradução.</p>
+        <p>Em alemão, todo substantivo já vem com o artigo: <span lang="de">der Hund</span>, <span lang="de">die Katze</span>, <span lang="de">das Bett</span>. Há também o alfabeto de cada idioma, letra por letra, com uma palavra de exemplo.</p>
+      </div>
+      <ul class="mosaico" aria-label="Algumas das fases">
+        <li><img src="/img/cachorro.svg" alt="" width="96" height="96" loading="lazy">Animais</li>
+        <li><img src="/img/apple.svg" alt="" width="96" height="96" loading="lazy">Comida</li>
+        <li><img src="/img/sol.svg" alt="" width="96" height="96" loading="lazy">Natureza</li>
+        <li><img src="/img/mao.svg" alt="" width="96" height="96" loading="lazy">Corpo</li>
+        <li><img src="/img/aviao.svg" alt="" width="96" height="96" loading="lazy">Veículos</li>
+        <li><img src="/img/bola.svg" alt="" width="96" height="96" loading="lazy">Brinquedos</li>
+        <li><img src="/img/violino.svg" alt="" width="96" height="96" loading="lazy">Instrumentos</li>
+        <li><img src="/img/feliz.svg" alt="" width="96" height="96" loading="lazy">Sentimentos</li>
+        <li><img src="/img/camiseta.svg" alt="" width="96" height="96" loading="lazy">Roupas</li>
+      </ul>
+    </section>
+
+    <section class="faixa" aria-labelledby="t-pais">
+      <h2 id="t-pais">Para os pais</h2>
+      <div class="colunas">
+        <div>
+          <h3>A palavra volta antes de ser esquecida</h3>
+          <p>O app usa repetição espaçada: cada palavra acertada demora mais para reaparecer (1, 3, 7, 16 e 35 dias); a que foi esquecida volta no dia seguinte. A revisão tem no máximo dez palavras por vez.</p>
+        </div>
+        <div>
+          <h3>Um perfil para cada criança</h3>
+          <p>Com uma conta gratuita, até quatro crianças têm o próprio mapa e as próprias estrelas, e o progresso acompanha a família em qualquer aparelho. Você vê em quais palavras cada uma tropeça.</p>
+        </div>
+        <div>
+          <h3>Poucos dados, nenhum anúncio</h3>
+          <p>Pedimos só o e-mail do responsável e um apelido para a criança. O app não grava a voz, não mostra propaganda e não vende dados. Você baixa ou apaga tudo quando quiser.</p>
         </div>
       </div>
-      <div class="trilha" id="trilha"></div>
-    </div>
-
-    <!-- ===== TELA: PAINEL DE PROGRESSO ===== -->
-    <div id="painel" class="escondida">
-      <div class="painel-topo">
-        <h2>Progresso</h2>
-      </div>
-      <div class="painel-conteudo">
-        <div class="cards-idioma" id="painelCards"></div>
-        <div class="painel-detalhe">
-          <h3 id="painelDetalheTitulo"></h3>
-          <div id="painelTemas"></div>
-        </div>
-        <div style="text-align:center; margin-top:18px;">
-          <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== SOBREPOSIÇÃO: FIM DA REVISÃO ===== -->
-    <div id="revFim" class="escondida">
-      <div class="trofeu-emoji">🔁</div>
-      <h3 id="revFimTexto"></h3>
-      <div class="botoes-fim">
-        <button class="destaque escondida" id="btnRevisarMais" onclick="iniciarRevisao(idiomaAtual)">Revisar mais</button>
-        <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
-      </div>
-    </div>
-
-    <!-- ===== SOBREPOSIÇÃO: REVISÃO EM DIA ===== -->
-    <div id="revVazia" class="escondida">
-      <div class="trofeu-emoji">✅</div>
-      <h3>Revisão em dia!</h3>
-      <p style="color:#9A876A; margin-top:-4px;">Nada pra revisar agora. Volte depois de brincar mais um pouco.</p>
-      <div class="botoes-fim">
-        <button class="btn-voltar-painel" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
-      </div>
-    </div>
-
-    <!-- ===== SOBREPOSIÇÃO: FIM DE RODADA ===== -->
-    <div id="fimRodada" class="escondida">
-      <div class="estrelas-grande" id="fimEstrelas"></div>
-      <h3 id="fimTitulo"></h3>
-      <div class="barra"><div class="barra-fill" id="fimBarra"></div></div>
-      <div class="botoes-fim">
-        <button class="icone" onclick="jogarDeNovo()" aria-label="Jogar de novo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 3 3 8 8 8"/>
-          </svg>
-        </button>
-        <button class="icone" onclick="abrirMapa(idiomaAtual)" aria-label="Voltar ao mapa">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#6E5B3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 4 L3 6 V20 L9 18 L15 20 L21 18 V4 L15 6 Z"/><line x1="9" y1="4" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="20"/>
-          </svg>
-        </button>
-        <button class="icone destaque escondida" id="btnProxima" aria-label="Próxima fase">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#B07A3A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- ===== SOBREPOSIÇÃO: TROFÉU DO IDIOMA ===== -->
-    <div id="telaTrofeu" class="escondida">
-      <div class="trofeu-emoji">🏆</div>
-      <h3 id="trofeuTexto"></h3>
-      <div class="botoes-fim">
-        <button class="destaque" onclick="abrirMapa(idiomaAtual)">Voltar ao mapa</button>
-      </div>
-    </div>
-
-    <!-- ===== TELA 2: CARTÃO DE PALAVRA ===== -->
-    <div id="estudo" class="tela escondida">
-      <div class="cartao">
-        <img class="figura" id="figura" src="" alt="">
-        <div class="palavra" id="palavra">...</div>
-        <div class="alf-trad" id="traducao"></div>
-
-        <button class="som" onclick="repetirSom()" aria-label="ouvir">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#8C7355" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 9v6h4l5 4V5L8 9H4z" fill="#8C7355" stroke="none"/>
-            <path d="M16 8a5 5 0 0 1 0 8"/>
-          </svg>
-        </button>
-
-        <button class="mic" onclick="ouvir()" aria-label="falar">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#F6EEDD" stroke-width="2" stroke-linecap="round">
-            <rect x="9" y="3" width="6" height="11" rx="3" fill="#F6EEDD" stroke="none"/>
-            <path d="M6 11a6 6 0 0 0 12 0"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-        </button>
-
-        <div class="ouvido" id="ouvido"></div>
-        <button class="pular escondida" id="pular" onclick="pular()">pular →</button>
-      </div>
-    </div>
-
-    <!-- ===== TELA 3: BANDEIRA (anuncia o idioma) ===== -->
-    <div id="bandeira" class="tela escondida">
-      <div id="bandeiraFlag" class="moldura-bandeira"></div>
-      <h1 class="titulo" id="bandeiraNome"></h1>
-    </div>
-
-    <!-- ===== TELA 4: CARTÃO DE LETRA ===== -->
-    <div id="alfabeto" class="tela escondida">
-      <div class="cartao">
-        <div class="letra-grande" id="alfLetra">A</div>
-
-        <div id="alfParte2" class="escondida">
-          <img class="figura escondida" id="alfFigura" src="" alt="">
-          <div class="palavra" id="alfPalavra">Apple</div>
-          <div class="alf-trad" id="alfTrad">maçã</div>
-
-          <button class="som" onclick="repetirSom()" aria-label="ouvir">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#8C7355" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 9v6h4l5 4V5L8 9H4z" fill="#8C7355" stroke="none"/>
-              <path d="M16 8a5 5 0 0 1 0 8"/>
-            </svg>
-          </button>
-
-          <button class="mic" onclick="ouvir()" aria-label="falar">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#F6EEDD" stroke-width="2" stroke-linecap="round">
-              <rect x="9" y="3" width="6" height="11" rx="3" fill="#F6EEDD" stroke="none"/>
-              <path d="M6 11a6 6 0 0 0 12 0"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
-          </button>
-
-          <div class="ouvido" id="alfOuvido"></div>
-          <button class="pular escondida" id="alfPular" onclick="pular()">pular →</button>
-        </div>
-      </div>
-    </div>
-
-    <script src="logica.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      const db = supabase.createClient(
-        "https://alypvuijjtyddajtsvvb.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFseXB2dWlqanR5ZGRhanRzdnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMDYyNzksImV4cCI6MjEwNTU4MjI3OX0.CnUCE3Hr9nDsqRMwviEntBd07uLaiJ5oyad40QEEWmQ"
-      );
-
-      // ===== dados do banco =====
-      let frases = [];       // palavras (tabela "palavras")
-      let todasLetras = [];  // letras (tabela "alfabeto")
-      let acertos = {};      // desempenho por "idioma|palavra" (da tabela "tentativas")
-
-      // frases só aparecem quando a palavra-base já foi dominada (>= 85% de acerto)
-      const LIMIAR_DOMINIO = 0.85;
-      const MIN_TENTATIVAS = 3;   // precisa de pelo menos algumas tentativas pra julgar
-      // usa a função pura de logica.js (mesma lógica, agora testável)
-      function dominou(pt, lang) {
-        return Logica.dominou(acertos, pt, lang, LIMIAR_DOMINIO, MIN_TENTATIVAS);
-      }
-
-      async function carregarAcertos() {
-        const rt = await db.from("tentativas").select("palavras,idioma,resultado");
-        acertos = {};
-        if (!rt.error) rt.data.forEach(function (t) {
-          const k = t.idioma + "|" + t.palavras;
-          if (!acertos[k]) acertos[k] = { ok: 0, total: 0 };
-          acertos[k].total++;
-          if (t.resultado === "acertou" || t.resultado === "quase") acertos[k].ok++;
-        });
-      }
-
-      async function carregarDados() {
-        const rp = await db.from("palavras").select("*").order("id");
-        if (rp.error || !rp.data || !rp.data.length) throw new Error("falha ao carregar palavras");
-        frases = rp.data;
-        const ra = await db.from("alfabeto").select("*").order("idioma").order("ordem");
-        if (ra.error || !ra.data) throw new Error("falha ao carregar alfabeto");
-        todasLetras = ra.data;
-        await carregarAcertos();
-      }
-
-      // ===== estado da sessão =====
-      const sequencia = ["en", "de", "it"];
-      const nomeIdioma = { en: "Inglês", de: "Alemão", it: "Italiano" };
-      const langMap = { en: "en-US", de: "de-DE", it: "it-IT" };
-      let posIdioma = 0;
-      let idioma = "en";
-      let restantes = 0;
-
-      let itens = [];    // {tipo:'palavra'|'letra', dados:...}
-      let fila = [];     // índices (em itens) desta rodada
-      let p = 0;
-      let atual = null;  // item atual
-      let errados = [];
-      let revisando = false;
-      let tentativas = 0;
-
-      // ===== montar a sessão: mistura palavras + algumas letras =====
-      function embaralhar(a) {
-        a = a.slice();
-        for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          const t = a[i]; a[i] = a[j]; a[j] = t;
-        }
-        return a;
-      }
-      function intercalar(base, extras) {
-        const r = base.slice();
-        const passo = Math.max(1, Math.floor(r.length / (extras.length + 1)));
-        let pos = passo;
-        extras.forEach(function (e) { r.splice(Math.min(pos, r.length), 0, e); pos += passo + 1; });
-        return r;
-      }
-      const PALAVRAS_POR_IDIOMA = 20;   // quantas palavras por idioma em cada rodada (ajuste aqui)
-      function montarSessao(lang) {
-        const elegiveis = frases.filter(function (w) {
-          if (w.tema !== "frases") return true;   // palavras normais: sempre entram
-          if (!w.requer) return true;              // frase sem pré-requisito: entra
-          return dominou(w.requer, lang);          // frase: só se dominou a palavra-base neste idioma
-        });
-        const escolhidas = embaralhar(elegiveis).slice(0, PALAVRAS_POR_IDIOMA);
-        const ws = escolhidas.map(function (w) { return { tipo: "palavra", dados: w }; });
-        let ls = embaralhar(todasLetras.filter(function (l) { return l.idioma === lang; })).slice(0, 3);
-        const lis = ls.map(function (l) { return { tipo: "letra", dados: l }; });
-        return intercalar(ws, lis);
-      }
-
-      // ===== bandeiras (anúncio do idioma) =====
-      const bandeiras = {
-        en: `<svg viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wc)"><rect x="0" y="0" width="42" height="28" fill="#EFE7D2"/><rect x="0" y="0" width="42" height="4" fill="#C0483B"/><rect x="0" y="8" width="42" height="4" fill="#C0483B"/><rect x="0" y="16" width="42" height="4" fill="#C0483B"/><rect x="0" y="24" width="42" height="4" fill="#C0483B"/><rect x="0" y="0" width="20" height="16" fill="#3B5486"/><g fill="#EFE7D2"><circle cx="6" cy="5" r="1.3"/><circle cx="14" cy="5" r="1.3"/><circle cx="10" cy="10" r="1.3"/><circle cx="6" cy="13" r="1.3"/><circle cx="14" cy="13" r="1.3"/></g></g></svg>`,
-        de: `<svg viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wc)"><rect x="0" y="0" width="42" height="9.3" fill="#3A3A3A"/><rect x="0" y="9.3" width="42" height="9.3" fill="#C0483B"/><rect x="0" y="18.6" width="42" height="9.4" fill="#E3B23C"/></g></svg>`,
-        it: `<svg viewBox="0 0 42 28" xmlns="http://www.w3.org/2000/svg"><g filter="url(#wc)"><rect x="0" y="0" width="14" height="28" fill="#5E9E6A"/><rect x="14" y="0" width="14" height="28" fill="#EFE7D2"/><rect x="28" y="0" width="14" height="28" fill="#C0483B"/></g></svg>`
-      };
-
-      // ===== início =====
-      let idiomaEscolhido = "en"; // lembra a escolha pra poder tentar de novo
-
-      async function comecar(lang) {
-        idiomaEscolhido = lang;
-        pedirMicrofone();
-        document.getElementById("capa").classList.add("escondida");
-        document.getElementById("erro").classList.add("escondida");
-        document.getElementById("carregando").classList.remove("escondida");
-        try {
-          if (!frases.length || !todasLetras.length) await carregarDados();
-          else await carregarAcertos();
-        } catch (e) {
-          document.getElementById("carregando").classList.add("escondida");
-          document.getElementById("erro").classList.remove("escondida");
-          return;
-        }
-        document.getElementById("carregando").classList.add("escondida");
-        abrirMapa(lang);
-      }
-
-      // ===================== MODELO DE FASES =====================
-      let idiomaAtual = "en";   // idioma do mapa aberto
-      let temas = [];           // ordem das fases (Logica.ordemTemas)
-      let iconeTema = {};       // tema -> figura representativa (aquarela)
-      let faseAtual = null;     // tema sendo jogado agora
-      let rodadaContada = false;
-      let rodadaOk = {};        // palavras acertadas NESTA rodada (pt -> true)
-      let modoRevisao = false;  // true quando a rodada é de revisão espaçada
-      let revOk = {};           // palavras acertadas NESTA revisão (pt -> true)
-
-      // ---- progresso (quantas rodadas por fase) em localStorage ----
-      function lerProgresso() {
-        try { return JSON.parse(localStorage.getItem("poliglota_progresso") || "{}"); }
-        catch (e) { return {}; }
-      }
-      function salvarProgresso(p) {
-        try { localStorage.setItem("poliglota_progresso", JSON.stringify(p)); } catch (e) {}
-      }
-
-      // ---- revisão espaçada (caixas de Leitner) em localStorage ----
-      // estrutura: { idioma: { pt: { caixa, prox } } }
-      function lerRevisao() {
-        try { return JSON.parse(localStorage.getItem("poliglota_revisao") || "{}"); }
-        catch (e) { return {}; }
-      }
-      function salvarRevisao(r) {
-        try { localStorage.setItem("poliglota_revisao", JSON.stringify(r)); } catch (e) {}
-      }
-      // palavras pendentes de revisão de um idioma (objetos-palavra)
-      function pendentesRevisao(lang) {
-        const prog = lerProgresso()[lang] || {};
-        const rev = lerRevisao()[lang] || {};
-        return Logica.revisaoPendente(frases, prog, rev, Date.now());
-      }
-      // grava o resultado de uma palavra revisada (sobe/baixa de caixa)
-      function agendarPalavra(lang, pt, acertou) {
-        const r = lerRevisao();
-        if (!r[lang]) r[lang] = {};
-        r[lang][pt] = Logica.agendarRevisao(r[lang][pt], acertou, Date.now());
-        salvarRevisao(r);
-      }
-
-      function rodadasDe(lang, tema) {
-        const p = lerProgresso();
-        return (p[lang] && p[lang][tema] && p[lang][tema].rodadas) || 0;
-      }
-      // registra uma rodada concluída: +1 rodada e guarda a MELHOR acurácia de rodada
-      function registrarRodada(lang, tema, acc) {
-        const p = lerProgresso();
-        if (!p[lang]) p[lang] = {};
-        if (!p[lang][tema]) p[lang][tema] = { rodadas: 0, melhorAcc: 0 };
-        p[lang][tema].rodadas++;
-        if (acc > (p[lang][tema].melhorAcc || 0)) p[lang][tema].melhorAcc = acc;
-        salvarProgresso(p);
-      }
-      function melhorAccDe(lang, tema) {
-        const p = lerProgresso();
-        return (p[lang] && p[lang][tema] && p[lang][tema].melhorAcc) || 0;
-      }
-
-      // ---- estrelas de uma fase (rodadas + melhor rodada) ----
-      function estrelasDe(lang, tema) {
-        return Logica.estrelasFase(rodadasDe(lang, tema), melhorAccDe(lang, tema));
-      }
-      function estrelasMapa(lang) {
-        const m = {};
-        temas.forEach(function (t) { m[t] = estrelasDe(lang, t); });
-        return m;
-      }
-
-      function esconderTudo() {
-        ["capa", "estudo", "alfabeto", "bandeira", "mapa", "fimRodada", "telaTrofeu", "painel", "revFim", "revVazia"]
-          .forEach(function (id) { document.getElementById(id).classList.add("escondida"); });
-      }
-
-      function nomeBonito(t) { const s = t.replace(/_/g, " "); return s.charAt(0).toUpperCase() + s.slice(1); }
-
-      function abrirMapa(lang) {
-        idiomaAtual = lang; idioma = lang;
-        if (!temas.length) {
-          temas = Logica.ordemTemas(frases);
-          temas.forEach(function (t) {
-            const w = frases.filter(function (x) { return x.tema === t; })
-                            .sort(function (a, b) { return a.id - b.id; })[0];
-            iconeTema[t] = w ? w.fig : null;
-          });
-        }
-        esconderTudo();
-        document.getElementById("mapa").classList.remove("escondida"); // visível antes de medir o caminho
-        renderMapa();
-      }
-
-      function svgEstrela(cheia) {
-        return '<svg viewBox="0 0 100 100"><path class="' + (cheia ? "st-cheia" : "st-vazia") +
-          '" d="M50 6 L62 38 L96 40 L69 61 L79 94 L50 74 L21 94 L31 61 L4 40 L38 38 Z"/></svg>';
-      }
-
-      function renderMapa() {
-        const estr = estrelasMapa(idiomaAtual);
-        document.getElementById("mapaFlag").innerHTML = bandeiras[idiomaAtual];
-        document.getElementById("mapaNome").textContent = nomeIdioma[idiomaAtual];
-        const totalEstrelas = temas.reduce(function (s, t) { return s + estr[t]; }, 0);
-        const vencidas = temas.filter(function (t) { return estr[t] >= 2; }).length;
-        document.getElementById("mapaContagem").textContent =
-          vencidas + " de " + temas.length + " fases · " + totalEstrelas + " estrelas";
-
-        // contador de palavras pendentes de revisão
-        const nRev = pendentesRevisao(idiomaAtual).length;
-        document.getElementById("btnRevisaoTxt").textContent = nRev > 0 ? ("Revisão (" + nRev + ")") : "Revisão";
-        document.getElementById("btnRevisao").classList.toggle("tem-pendencia", nRev > 0);
-
-        // botão de trocar idioma = bandeiras dos OUTROS idiomas (sem texto)
-        const troca = document.getElementById("mapaTrocar");
-        troca.innerHTML = "";
-        sequencia.forEach(function (l) {
-          if (l === idiomaAtual) return;
-          const btn = document.createElement("button");
-          btn.setAttribute("aria-label", nomeIdioma[l]);
-          btn.innerHTML = bandeiras[l];
-          btn.onclick = function () { abrirMapa(l); };
-          troca.appendChild(btn);
-        });
-
-        const trilha = document.getElementById("trilha");
-        trilha.innerHTML = "";
-        temas.forEach(function (t, i) {
-          const n = estr[t];
-          const aberta = Logica.faseDestravada(estr, temas, i);
-          const ehAtual = aberta && n < 2;  // a próxima a vencer "pulsa"
-          const div = document.createElement("div");
-          div.className = "fase " + (i % 2 === 0 ? "esq" : "dir") + " " +
-            (!aberta ? "travada" : (ehAtual ? "atual" : "aberta"));
-          let topo;
-          if (!aberta) topo = '<div class="estrelas"><span class="cadeado">🔒</span></div>';
-          else topo = '<div class="estrelas">' + svgEstrela(n >= 1) + svgEstrela(n >= 2) + svgEstrela(n >= 3) + '</div>';
-          const ic = iconeTema[t] ? '<img src="' + svgSrc(iconeTema[t]) + '" alt="">' : "";
-          div.innerHTML = topo + '<div class="bolha">' + ic + '</div><div class="nome">' + nomeBonito(t) + '</div>';
-          if (aberta) div.querySelector(".bolha").addEventListener("click", function () { jogarFase(t); });
-          trilha.appendChild(div);
-        });
-
-        // troféu no fim
-        const temTrofeu = Logica.ganhouTrofeu(estr, temas);
-        const tro = document.createElement("div");
-        tro.className = "trofeu-fase" + (temTrofeu ? "" : " travado");
-        tro.innerHTML = '<div class="trofeu-bolha">🏆</div><div class="nome">Troféu do ' +
-          nomeIdioma[idiomaAtual] + '</div>';
-        trilha.appendChild(tro);
-
-        desenharCaminho(); // tracejado ligando uma fase na outra
-      }
-
-      // desenha o caminho pontilhado passando pelo centro de cada fase, em zigue-zague
-      function desenharCaminho() {
-        const trilha = document.getElementById("trilha");
-        const base = trilha.getBoundingClientRect();
-        const bolhas = trilha.querySelectorAll(".bolha, .trofeu-bolha");
-        if (bolhas.length < 2) return;
-        const pts = [], rad = [];
-        bolhas.forEach(function (b) {
-          const r = b.getBoundingClientRect();
-          pts.push([r.left - base.left + r.width / 2, r.top - base.top + r.height / 2]);
-          rad.push(r.width / 2 + 5); // raio + folga: o traço começa fora da bolha
-        });
-        // um segmento por par de fases, começando e terminando NA BORDA (nunca sobre a imagem)
-        let d = "";
-        for (let i = 1; i < pts.length; i++) {
-          const x0 = pts[i - 1][0], y0 = pts[i - 1][1], x1 = pts[i][0], y1 = pts[i][1];
-          const dx = x1 - x0, dy = y1 - y0, len = Math.sqrt(dx * dx + dy * dy) || 1;
-          const ux = dx / len, uy = dy / len;
-          const sx = x0 + ux * rad[i - 1], sy = y0 + uy * rad[i - 1];
-          const ex = x1 - ux * rad[i],     ey = y1 - uy * rad[i];
-          d += " M " + sx + " " + sy + " L " + ex + " " + ey;
-        }
-        const ns = "http://www.w3.org/2000/svg";
-        let svg = trilha.querySelector("svg.caminho");
-        if (!svg) {
-          svg = document.createElementNS(ns, "svg");
-          svg.setAttribute("class", "caminho");
-          trilha.insertBefore(svg, trilha.firstChild);
-        }
-        svg.setAttribute("width", trilha.offsetWidth);
-        svg.setAttribute("height", trilha.offsetHeight);
-        svg.innerHTML = '<path d="' + d + '" fill="none" stroke="#D9C7A0" stroke-width="3" ' +
-          'stroke-linecap="round" stroke-dasharray="2 11"/>';
-      }
-
-      function montarFase(tema) {
-        const ws = frases.filter(function (w) { return w.tema === tema; });
-        return embaralhar(ws).map(function (w) { return { tipo: "palavra", dados: w }; });
-      }
-
-      function jogarFase(tema) {
-        const i = temas.indexOf(tema);
-        if (!Logica.faseDestravada(estrelasMapa(idiomaAtual), temas, i)) return; // travada
-        faseAtual = tema; idioma = idiomaAtual; rodadaContada = false; rodadaOk = {}; modoRevisao = false;
-        itens = montarFase(tema);
-        if (!itens.length) return;
-        fila = itens.map(function (_, k) { return k; });
-        p = 0; errados = []; revisando = false;
-        esconderTudo();
-        mostrarItem();
-      }
-      function jogarDeNovo() { jogarFase(faseAtual); }
-
-      function fimDeRodada() {
-        if (modoRevisao) { fimRevisao(); return; }
-        const antes = estrelasDe(idiomaAtual, faseAtual);
-        // acurácia DESTA rodada = palavras acertadas / total de palavras da fase
-        const totalPalavras = itens.length || 1;
-        let okRodada = 0;
-        for (const k in rodadaOk) if (rodadaOk[k]) okRodada++;
-        const accRodada = okRodada / totalPalavras;
-        if (!rodadaContada) { registrarRodada(idiomaAtual, faseAtual, accRodada); rodadaContada = true; }
-        const depois = estrelasDe(idiomaAtual, faseAtual);
-        const rod = rodadasDe(idiomaAtual, faseAtual);
-        const melhor = melhorAccDe(idiomaAtual, faseAtual);
-
-        document.getElementById("fimEstrelas").innerHTML =
-          '<span class="' + (depois >= 1 ? "pop" : "") + '">' + svgEstrela(depois >= 1) + '</span>' +
-          '<span class="' + (depois >= 2 ? "pop" : "") + '">' + svgEstrela(depois >= 2) + '</span>' +
-          '<span class="' + (depois >= 3 ? "pop" : "") + '">' + svgEstrela(depois >= 3) + '</span>';
-
-        let titulo;
-        if (depois >= 2 && antes < 2) titulo = "Fase vencida! 🎉";
-        else if (depois > antes) titulo = "Nova estrela! ⭐";
-        else titulo = "Boa! Continua assim 👏";
-        document.getElementById("fimTitulo").textContent = titulo;
-        const prog = Logica.progressoFase(rod, melhor);
-        const fill = document.getElementById("fimBarra");
-        fill.style.width = "0%";
-        setTimeout(function () { fill.style.width = Math.round(prog * 100) + "%"; }, 80);
-
-        // botão "próxima fase": só quando venceu esta e a seguinte existe/destravou
-        const idx = temas.indexOf(faseAtual);
-        const bp = document.getElementById("btnProxima");
-        if (idx + 1 < temas.length && Logica.faseDestravada(estrelasMapa(idiomaAtual), temas, idx + 1)) {
-          bp.classList.remove("escondida");
-          bp.onclick = function () { jogarFase(temas[idx + 1]); };
-        } else {
-          bp.classList.add("escondida");
-        }
-
-        esconderTudo();
-        document.getElementById("fimRodada").classList.remove("escondida");
-
-        if (Logica.ganhouTrofeu(estrelasMapa(idiomaAtual), temas)) {
-          setTimeout(mostrarTrofeu, 1400);
-        }
-      }
-
-      function mostrarTrofeu() {
-        document.getElementById("trofeuTexto").textContent =
-          "Você conquistou o troféu do " + nomeIdioma[idiomaAtual] + "!";
-        esconderTudo();
-        document.getElementById("telaTrofeu").classList.remove("escondida");
-      }
-
-      function voltarCapa() {
-        esconderTudo();
-        document.getElementById("capa").classList.remove("escondida");
-      }
-
-      // ---- Painel de progresso ----
-      function abrirPainel(lang) {
-        if (!temas.length) {                 // garante a ordem de temas (igual ao mapa)
-          temas = Logica.ordemTemas(frases);
-          temas.forEach(function (t) {
-            const w = frases.filter(function (x) { return x.tema === t; })
-                            .sort(function (a, b) { return a.id - b.id; })[0];
-            iconeTema[t] = w ? w.fig : null;
-          });
-        }
-        esconderTudo();
-        document.getElementById("painel").classList.remove("escondida");
-        renderPainel(lang || idiomaAtual);
-      }
-
-      function renderPainel(lang) {
-        // cartões de resumo por idioma (clicáveis para trocar o detalhe)
-        const cards = document.getElementById("painelCards");
-        cards.innerHTML = "";
-        sequencia.forEach(function (l) {
-          const estr = estrelasMapa(l);
-          const totalEstrelas = temas.reduce(function (s, t) { return s + estr[t]; }, 0);
-          const vencidas = temas.filter(function (t) { return estr[t] >= 2; }).length;
-          const trofeu = Logica.ganhouTrofeu(estr, temas);
-          const div = document.createElement("div");
-          div.className = "card-idioma" + (l === lang ? " sel" : "");
-          div.innerHTML = bandeiras[l] +
-            '<div class="ci-nome">' + nomeIdioma[l] + '</div>' +
-            '<div class="ci-num"><b>' + vencidas + '</b>/' + temas.length + ' fases<br>' +
-            '⭐ <b>' + totalEstrelas + '</b> estrelas<br>' +
-            (trofeu ? '🏆 troféu!' : '🏆 falta pouco') + '</div>';
-          div.onclick = function () { renderPainel(l); };
-          cards.appendChild(div);
-        });
-
-        // detalhe: lista de temas do idioma selecionado, com as estrelinhas
-        document.getElementById("painelDetalheTitulo").textContent =
-          "Fases · " + nomeIdioma[lang];
-        const estr = estrelasMapa(lang);
-        const lista = document.getElementById("painelTemas");
-        lista.innerHTML = "";
-        temas.forEach(function (t) {
-          const n = estr[t];
-          const div = document.createElement("div");
-          div.className = "linha-tema" + (n >= 2 ? " venceu" : "");
-          div.innerHTML = '<span class="lt-nome">' + nomeBonito(t) + '</span>' +
-            '<span class="estrelas">' + svgEstrela(n >= 1) + svgEstrela(n >= 2) + svgEstrela(n >= 3) + '</span>';
-          lista.appendChild(div);
-        });
-      }
-
-      // ---- Revisão espaçada ----
-      const MAX_REVISAO = 10;   // no máximo 10 palavras por rodada de revisão
-
-      function iniciarRevisao(lang) {
-        idiomaAtual = lang || idiomaAtual; idioma = idiomaAtual;
-        const pend = pendentesRevisao(idiomaAtual).slice(0, MAX_REVISAO);
-        if (!pend.length) {         // nada vencido: tela de "em dia"
-          esconderTudo();
-          document.getElementById("revVazia").classList.remove("escondida");
-          return;
-        }
-        modoRevisao = true; revOk = {}; rodadaContada = true; // não conta como rodada de fase
-        itens = embaralhar(pend).map(function (w) { return { tipo: "palavra", dados: w }; });
-        fila = itens.map(function (_, k) { return k; });
-        p = 0; errados = []; revisando = false;
-        esconderTudo();
-        mostrarItem();
-      }
-
-      function fimRevisao() {
-        let acertou = 0;
-        itens.forEach(function (it) {
-          if (it.tipo !== "palavra") return;
-          const ok = !!revOk[it.dados.pt];
-          if (ok) acertou++;
-          agendarPalavra(idiomaAtual, it.dados.pt, ok);
-        });
-        document.getElementById("revFimTexto").textContent =
-          "Você revisou " + itens.length + " palavra" + (itens.length > 1 ? "s" : "") +
-          " · acertou " + acertou + "!";
-        const aindaTem = pendentesRevisao(idiomaAtual).length > 0;
-        document.getElementById("btnRevisarMais").classList.toggle("escondida", !aindaTem);
-        modoRevisao = false;
-        esconderTudo();
-        document.getElementById("revFim").classList.remove("escondida");
-      }
-
-      // limpa automaticamente, uma única vez, um progresso salvo por regras antigas
-      // (antes da correção das estrelas / da junção de fases). Sem botão, invisível.
-      const PROGRESSO_VERSAO = "2";
-      (function migrarProgresso() {
-        try {
-          if (localStorage.getItem("poliglota_versao") !== PROGRESSO_VERSAO) {
-            localStorage.removeItem("poliglota_progresso");
-            localStorage.setItem("poliglota_versao", PROGRESSO_VERSAO);
-          }
-        } catch (e) {}
-      })();
-
-      function tentarDeNovo() {
-        comecar(idiomaEscolhido);
-      }
-
-      function iniciarIdioma(anunciar) {
-        idioma = sequencia[posIdioma];
-        itens = montarSessao(idioma);
-        fila = itens.map(function (_, i) { return i; });
-        p = 0; errados = []; revisando = false;
-        if (anunciar) mostrarBandeira();
-        else { document.getElementById("bandeira").classList.add("escondida"); mostrarItem(); }
-      }
-
-      function mostrarBandeira() {
-        document.getElementById("estudo").classList.add("escondida");
-        document.getElementById("alfabeto").classList.add("escondida");
-        document.getElementById("bandeiraFlag").innerHTML = bandeiras[idioma];
-        document.getElementById("bandeiraNome").textContent = nomeIdioma[idioma];
-        const tela = document.getElementById("bandeira");
-        tela.classList.remove("escondida");
-        setTimeout(function () {
-          tela.classList.add("escondida");
-          p = 0;
-          mostrarItem();
-        }, 1600);
-      }
-
-      // ===== mostrar o item atual (palavra ou letra) =====
-      function mostrarItem() {
-        tentativas = 0;
-        atual = itens[fila[p]];
-        if (atual.tipo === "letra") mostrarLetraCartao();
-        else mostrarPalavraCartao();
-      }
-
-      function svgSrc(fig) {
-        const nome = (fig && fig.slice(-4) === ".svg") ? fig : fig + ".svg";
-        return "img/" + nome;   // imagens ficam na pasta img/
-      }
-
-      function mostrarPalavraCartao() {
-        document.getElementById("alfabeto").classList.add("escondida");
-        document.getElementById("estudo").classList.remove("escondida");
-        const w = atual.dados;
-        document.getElementById("figura").src = svgSrc(w.fig);
-        document.getElementById("palavra").textContent = w[idioma];
-        document.getElementById("traducao").textContent = w.pt;
-        document.getElementById("ouvido").textContent = "";
-        document.getElementById("pular").classList.add("escondida");
-        repetirSom();
-      }
-
-      // letra: 1º tempo mostra e fala a letra; ~2,4s depois revela e fala a palavra (sem botão)
-      function mostrarLetraCartao() {
-        document.getElementById("estudo").classList.add("escondida");
-        document.getElementById("alfabeto").classList.remove("escondida");
-        const a = atual.dados;
-        document.getElementById("alfLetra").textContent = a.letra;
-        document.getElementById("alfLetra").classList.remove("escondida");
-        document.getElementById("alfParte2").classList.add("escondida");
-        document.getElementById("alfOuvido").textContent = "";
-        document.getElementById("alfPular").classList.add("escondida");
-        tocarArquivo("alf_" + idioma + "_" + a.ordem + "_letra.mp3");
-        const aRef = a;
-        setTimeout(function () {
-          if (atual && atual.tipo === "letra" && atual.dados === aRef) {
-            const img = document.getElementById("alfFigura");
-            if (aRef.fig) { img.src = svgSrc(aRef.fig); img.classList.remove("escondida"); }
-            else { img.classList.add("escondida"); }
-            document.getElementById("alfPalavra").textContent = aRef.exemplo;
-            document.getElementById("alfTrad").textContent = aRef.exemplo_pt;
-            document.getElementById("alfLetra").classList.add("escondida");
-            document.getElementById("alfParte2").classList.remove("escondida");
-            tocarArquivo("alf_" + idioma + "_" + aRef.ordem + "_palavra.mp3");
-          }
-        }, 2400);
-      }
-
-      function tocarArquivo(arquivo) { new Audio("audio/" + arquivo).play().catch(function () {}); }
-
-      // toca o som do item atual (palavra, ou palavra de exemplo da letra)
-      function repetirSom() {
-        if (atual.tipo === "letra") {
-          tocarArquivo("alf_" + idioma + "_" + atual.dados.ordem + "_palavra.mp3");
-        } else {
-          const w = atual.dados;
-          new Audio("audio/" + w.id + "_" + idioma + ".mp3").play().catch(function () { falarNavegador(w[idioma]); });
-        }
-      }
-
-      // ===== voz do navegador (só reserva) =====
-      let vozes = [];
-      function carregarVozes() { vozes = window.speechSynthesis.getVoices(); }
-      carregarVozes();
-      if (typeof speechSynthesis !== "undefined" && speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = carregarVozes;
-      }
-      function falarNavegador(texto) {
-        if (!("speechSynthesis" in window)) return;
-        speechSynthesis.cancel();
-        const alvo = langMap[idioma];
-        const prefixo = alvo.slice(0, 2);
-        const lista = window.speechSynthesis.getVoices();
-        const disponiveis = (lista && lista.length) ? lista : vozes;
-        const voz = disponiveis.find(function (v) { return v.lang === alvo; })
-                 || disponiveis.find(function (v) { return v.lang.slice(0, 2) === prefixo; });
-        const fala = new SpeechSynthesisUtterance(texto);
-        if (voz) fala.voice = voz;
-        fala.lang = alvo; fala.rate = 0.9;
-        speechSynthesis.speak(fala);
-      }
-
-      function pedirMicrofone() {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(function (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); })
-            .catch(function () {});
-        }
-      }
-
-      // ===== elementos de feedback conforme o tipo de cartão =====
-      function elOuvido() { return document.getElementById(atual.tipo === "letra" ? "alfOuvido" : "ouvido"); }
-      function elPular() { return document.getElementById(atual.tipo === "letra" ? "alfPular" : "pular"); }
-      function alvoAtual() { return atual.tipo === "letra" ? atual.dados.exemplo : atual.dados[idioma]; }
-
-      // ===== microfone =====
-      // iPhone/iOS não tem reconhecimento de voz confiável no navegador -> modo sem microfone (o botão avança)
-      const ehIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
-      const TEM_MIC = !!(window.SpeechRecognition || window.webkitSpeechRecognition) && !ehIOS;
-      let escutando = false;
-      function ouvir() {
-        if (!TEM_MIC) { proximo(); return; }   // sem reconhecimento: toca no botão pra avançar
-        if (escutando) return;
-        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Rec) { proximo(); return; }
-        const recog = new Rec();
-        recog.lang = langMap[idioma];
-        recog.interimResults = false;
-        recog.maxAlternatives = 5;
-        let capturou = false;
-        escutando = true;
-        elOuvido().textContent = "ouvindo...";
-        const limite = setTimeout(function () { try { recog.stop(); } catch (e) {} }, 6000);
-        recog.onresult = function (ev) {
-          capturou = true;
-          const alts = [];
-          for (let i = 0; i < ev.results[0].length; i++) alts.push(ev.results[0][i].transcript);
-          avaliar(alts);
-        };
-        recog.onerror = function () { registrarFalha("não consegui ouvir — toca no microfone"); };
-        recog.onend = function () {
-          clearTimeout(limite); escutando = false;
-          const el = elOuvido();
-          if (!capturou && el.textContent === "ouvindo...") registrarFalha("não ouvi — tenta de novo");
-        };
-        try { recog.start(); } catch (e) { escutando = false; }
-      }
-
-      function avaliar(textos) {
-        const el = elOuvido();
-        const s = Logica.pontuar(textos, alvoAtual()); // lógica pura de logica.js
-        function marcarOk() {
-          if (atual.tipo === "palavra") { rodadaOk[atual.dados.pt] = true; revOk[atual.dados.pt] = true; }
-        }
-        if (s >= 0.55) { salvar("acertou"); marcarOk(); el.textContent = "boa! 🎉"; setTimeout(proximo, 1100); }
-        else if (s >= 0.30) { salvar("quase"); marcarOk(); el.textContent = "quase! 👍"; setTimeout(proximo, 1200); }
-        else { salvar("errou"); registrarFalha("tenta de novo 🙂"); }
-      }
-
-      function registrarFalha(msg) {
-        elOuvido().textContent = msg;
-        tentativas++;
-        if (tentativas >= 3) { elOuvido().textContent = "tudo bem, vamos pra próxima 👏"; setTimeout(proximo, 1000); }
-        else elPular().classList.remove("escondida");
-      }
-
-      function pular() {
-        salvar("pulou");
-        if (errados.indexOf(fila[p]) === -1) errados.push(fila[p]);
-        proximo();
-      }
-
-      function proximo() {
-        if (p + 1 < fila.length) { p = p + 1; mostrarItem(); return; }
-        if (!revisando && errados.length > 0) {
-          revisando = true; fila = errados.slice(); errados = []; p = 0; mostrarItem(); return;
-        }
-        fimDeRodada(); // acabou a fase: mostra estrelas e volta pro mapa
-      }
-
-      function salvar(resultado) {
-        const rotulo = atual.tipo === "letra" ? ("letra " + atual.dados.letra) : atual.dados.pt;
-        // atualiza o acumulado local na hora, pras estrelas refletirem sem recarregar
-        const k = idioma + "|" + rotulo;
-        if (!acertos[k]) acertos[k] = { ok: 0, total: 0 };
-        acertos[k].total++;
-        if (resultado === "acertou" || resultado === "quase") acertos[k].ok++;
-        db.from("tentativas").insert({ palavras: rotulo, idioma: idioma, resultado: resultado })
-          .then(function (r) { if (r.error) console.log("erro ao salvar:", r.error.message); });
-      }
-    </script>
-  </body>
+    </section>
+
+    <section class="faixa estreita" aria-labelledby="t-duvidas">
+      <h2 id="t-duvidas">Dúvidas comuns</h2>
+      <details>
+        <summary>Meu filho precisa saber ler?</summary>
+        <p>Não. Tudo se escolhe por figura, bandeira ou ícone, e o app avança sozinho quando ele fala a palavra. A palavra escrita aparece no cartão para quem já está curioso com as letras.</p>
+      </details>
+      <details>
+        <summary>Funciona no iPhone e no iPad?</summary>
+        <p>Funciona, no modo ouvir e repetir: a criança ouve, repete em voz alta e toca no botão para seguir. O reconhecimento de fala depende do navegador e hoje está disponível no Chrome, em Android e computador.</p>
+      </details>
+      <details>
+        <summary>Precisa instalar alguma coisa?</summary>
+        <p>Não. O app abre no navegador. Se quiser, use “Adicionar à tela inicial” para ele ganhar um ícone e abrir em tela cheia. As fases que já foram abertas uma vez continuam funcionando sem internet.</p>
+      </details>
+      <details>
+        <summary>Preciso criar uma conta?</summary>
+        <p>Não para começar. Sem conta, o progresso fica guardado só naquele aparelho. A conta serve para levar o progresso a outros aparelhos e separar os perfis de cada criança.</p>
+      </details>
+      <details>
+        <summary>O app grava a voz do meu filho?</summary>
+        <p>Não. Quando o microfone é usado, quem transforma a fala em texto é o próprio navegador, e o app recebe apenas o texto para comparar com a palavra. Nos detalhes, veja a <a href="/privacidade">política de privacidade</a>.</p>
+      </details>
+    </section>
+
+    <section class="chamada">
+      <img src="/icons/globo.svg" alt="" width="120" height="120" loading="lazy">
+      <h2>Escolha um idioma e comece pela primeira fase</h2>
+      <a class="btn btn-principal btn-grande" href="/app">Começar a brincar</a>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Pequeno Poliglota <span data-ano></span></p>
+    <nav aria-label="Rodapé">
+      <a href="/privacidade">Privacidade</a>
+      <a href="/termos">Termos de uso</a>
+      <a data-contato-link hidden>Contato</a>
+    </nav>
+  </footer>
+
+  <script type="module" src="/js/site.js"></script>
+</body>
 </html>

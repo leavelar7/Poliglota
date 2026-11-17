@@ -1,0 +1,92 @@
+/* base.css — papel, tinta, tipos e controles usados pelo app e pelo site */
+@font-face { font-family: "Fredoka"; src: url("/fonts/fredoka.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+@font-face { font-family: "Andika"; src: url("/fonts/andika-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Andika"; src: url("/fonts/andika-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  /* cores tiradas das aquarelas: papel, tinta sépia, mar e folha do globo, ocre do aviãozinho */
+  --papel: #F1E8D5;
+  --papel-claro: #FAF5E9;
+  --papel-sombra: #E6D9BC;
+  --linha: #D9C7A0;
+  --tinta: #43352A;
+  --tinta-suave: #6B5B47;
+  --mar: #3F7080;
+  --mar-escuro: #2F5866;
+  --mar-claro: #90AEB8;
+  --folha: #6F8B55;
+  --ocre: #D99A4E;
+  --ocre-escuro: #A8661F;
+  --sol: #F2B705;
+  --tomate: #B23E32;
+
+  --titulo: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --texto: "Andika", "Segoe UI", system-ui, sans-serif;
+  --raio: 18px;
+  --sombra-papel: 0 2px 0 var(--papel-sombra), 0 14px 30px rgba(67, 53, 42, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  background: var(--papel); color: var(--tinta);
+  font-family: var(--texto); font-size: 1.0625rem; line-height: 1.6;
+}
+[hidden] { display: none !important; }
+img, svg { max-width: 100%; }
+h1, h2, h3 { font-family: var(--titulo); font-weight: 600; line-height: 1.15; margin: 0; }
+p { margin: 0 0 0.8em; }
+a { color: var(--mar-escuro); text-underline-offset: 0.15em; }
+a:hover { color: var(--tinta); }
+:focus-visible { outline: 3px solid var(--mar); outline-offset: 3px; border-radius: 6px; }
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button:disabled { opacity: 0.6; cursor: default; }
+.defs { position: absolute; width: 0; height: 0; }
+
+/* ---------- botões ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5em;
+  min-height: 46px; padding: 0.55em 1.2em;
+  font-family: var(--titulo); font-weight: 500; font-size: 1rem; line-height: 1.2; text-decoration: none;
+  color: var(--tinta); background: var(--papel-claro);
+  border: 2px solid var(--linha); border-radius: 999px;
+  transition: transform 0.08s ease, background-color 0.15s ease;
+}
+.btn:hover { background: #fff; color: var(--tinta); }
+.btn:active { transform: translateY(1px); }
+.btn svg { width: 1.15em; height: 1.15em; flex: none; }
+.btn-principal { background: var(--mar); border-color: var(--mar); color: #fff; }
+.btn-principal:hover { background: var(--mar-escuro); border-color: var(--mar-escuro); color: #fff; }
+.btn-perigo { background: var(--tomate); border-color: var(--tomate); color: #fff; }
+.btn-perigo:hover { background: #972f25; color: #fff; }
+.btn-perigo-suave { color: var(--tomate); border-color: #dcb2a8; }
+.btn-pequeno { min-height: 38px; padding: 0.3em 0.9em; font-size: 0.9375rem; }
+.btn-largo { width: 100%; }
+.btn-grande { min-height: 58px; padding: 0.6em 1.6em; font-size: 1.2rem; }
+
+.link { background: none; border: none; padding: 0.4em 0; color: var(--mar-escuro); text-decoration: underline; text-underline-offset: 0.15em; font-size: 1rem; }
+
+/* ---------- formulários ---------- */
+.form { display: grid; gap: 14px; }
+.grupo { display: grid; gap: 4px; }
+.rotulo { font-weight: 700; font-size: 0.9375rem; }
+.campo {
+  width: 100%; min-height: 48px; padding: 0.5em 0.8em;
+  font: inherit; color: var(--tinta); background: #fff;
+  border: 2px solid var(--linha); border-radius: 12px;
+}
+.campo:focus-visible { outline-offset: 1px; border-color: var(--mar); }
+.erro-campo { color: var(--tomate); font-weight: 700; margin: 0; min-height: 0; }
+.erro-campo:empty { display: none; }
+.aceite { display: flex; gap: 10px; align-items: flex-start; font-size: 0.9375rem; line-height: 1.45; }
+.aceite input { width: 22px; height: 22px; margin: 2px 0 0; flex: none; accent-color: var(--mar); }
+.linha-botoes { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.linha-botoes.esquerda { justify-content: flex-start; }
+.nota { font-size: 0.9375rem; color: var(--tinta-suave); }
+.lista { margin: 0 0 1em; padding-left: 1.2em; }
+.lista li { margin-bottom: 0.25em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

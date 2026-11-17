@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pequeno Poliglota</title>
+  <meta name="description" content="Inglês, alemão e italiano para crianças que ainda não leem.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F1E8D5">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Poliglota">
+  <link rel="preload" href="/fonts/fredoka.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/andika-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="app">
+
+  <!-- filtro de aquarela compartilhado pelos desenhos feitos no próprio app -->
+  <svg class="defs" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+        <feGaussianBlur stdDeviation="0.5"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <main id="app">
+
+    <!-- carregando -->
+    <section id="tela-carregando" class="tela centro" aria-live="polite">
+      <img class="globo girando" src="/icons/globo.svg" alt="" width="150" height="150">
+      <p class="suave">Carregando…</p>
+    </section>
+
+    <!-- erro de conexão -->
+    <section id="tela-erro" class="tela centro" hidden>
+      <img src="/img/tartaruga.svg" alt="" width="160" height="160">
+      <h1 class="titulo-medio">Não consegui carregar as palavras</h1>
+      <p class="suave">Confira a internet e tente de novo.</p>
+      <button class="btn btn-grande btn-brincar" id="btn-tentar" type="button">Tentar de novo</button>
+    </section>
+
+    <!-- capa -->
+    <section id="tela-inicio" class="tela centro" hidden>
+      <img class="globo" src="/icons/globo.svg" alt="" width="170" height="170">
+      <h1 class="titulo">Pequeno Poliglota</h1>
+      <div id="quem" class="quem" role="group" aria-label="Quem vai brincar?" hidden></div>
+      <div class="idiomas" role="group" aria-label="Escolha um idioma">
+        <button class="btn-idioma" type="button" data-idioma="en">
+          <svg viewBox="0 0 42 28" aria-hidden="true"><g filter="url(#wc)"><rect width="42" height="28" fill="#EFE7D2"/><rect width="42" height="4" fill="#C0483B"/><rect y="8" width="42" height="4" fill="#C0483B"/><rect y="16" width="42" height="4" fill="#C0483B"/><rect y="24" width="42" height="4" fill="#C0483B"/><rect width="20" height="16" fill="#3B5486"/><g fill="#EFE7D2"><circle cx="6" cy="5" r="1.3"/><circle cx="14" cy="5" r="1.3"/><circle cx="10" cy="10" r="1.3"/><circle cx="6" cy="13" r="1.3"/><circle cx="14" cy="13" r="1.3"/></g></g></svg>
+          <span>Inglês</span>
+        </button>
+        <button class="btn-idioma" type="button" data-idioma="de">
+          <svg viewBox="0 0 42 28" aria-hidden="true"><g filter="url(#wc)"><rect width="42" height="9.3" fill="#3A3A3A"/><rect y="9.3" width="42" height="9.3" fill="#C0483B"/><rect y="18.6" width="42" height="9.4" fill="#E3B23C"/></g></svg>
+          <span>Alemão</span>
+        </button>
+        <button class="btn-idioma" type="button" data-idioma="it">
+          <svg viewBox="0 0 42 28" aria-hidden="true"><g filter="url(#wc)"><rect width="14" height="28" fill="#5E9E6A"/><rect x="14" width="14" height="28" fill="#EFE7D2"/><rect x="28" width="14" height="28" fill="#C0483B"/></g></svg>
+          <span>Italiano</span>
+        </button>
+      </div>
+      <button class="btn-pais" id="btn-pais" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.3"/><path d="M16 14.3c2.9.2 5 2.5 5 5.7"/></svg>
+        Para os pais
+      </button>
+    </section>
+
+    <!-- mapa de fases -->
+    <section id="tela-mapa" class="tela" hidden>
+      <header class="mapa-topo">
+        <button class="btn-redondo" id="mapa-inicio" type="button"></button>
+        <div class="mapa-idioma">
+          <span id="mapa-bandeira" class="mapa-bandeira"></span>
+          <h1 id="mapa-nome" class="titulo-medio"></h1>
+          <p id="mapa-contagem" class="suave pequeno"></p>
+        </div>
+        <div id="mapa-trocar" class="mapa-trocar"></div>
+      </header>
+      <div class="mapa-acoes">
+        <button class="btn btn-chip" id="btn-progresso" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="20" x2="4" y2="12"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="9"/></svg>
+          Progresso
+        </button>
+        <button class="btn btn-chip" id="btn-revisao" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 3 3 8 8 8"/></svg>
+          <span id="btn-revisao-txt">Revisão</span>
+        </button>
+        <button class="btn btn-chip" id="btn-abc" type="button" aria-label="Alfabeto">ABC</button>
+      </div>
+      <div class="trilha" id="trilha"></div>
+    </section>
+
+    <!-- rodada -->
+    <section id="tela-jogo" class="tela" hidden>
+      <header class="jogo-topo">
+        <button class="btn-redondo" id="btn-sair" type="button" aria-label="Sair da fase e voltar ao mapa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+        </button>
+        <div class="barra" role="progressbar" aria-label="Andamento da fase" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="barra-fill" id="jogo-barra"></div></div>
+      </header>
+      <div class="jogo-palco">
+        <div class="cartao" id="cartao">
+          <div class="letra-grande" id="letra-grande" hidden></div>
+          <div id="cartao-corpo">
+            <img class="figura" id="figura" src="" alt="" width="220" height="220">
+            <p class="palavra" id="palavra" lang="en"></p>
+            <p class="traducao" id="traducao"></p>
+            <div class="cartao-botoes">
+              <button class="btn-som" id="btn-som" type="button" aria-label="Ouvir de novo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path d="M16 8a5 5 0 0 1 0 8"/></svg>
+              </button>
+              <button class="btn-falar" id="btn-falar" type="button" aria-label="Falar a palavra"></button>
+              <button class="btn-som" id="btn-pular" type="button" aria-label="Pular esta palavra" hidden>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+              </button>
+            </div>
+          </div>
+          <p class="feedback" id="feedback" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- fim de rodada -->
+    <section id="tela-fim" class="tela centro" hidden>
+      <div class="estrelas estrelas-grande" id="fim-estrelas" role="img"></div>
+      <h1 class="titulo-medio" id="fim-titulo"></h1>
+      <div class="barra barra-fim" aria-hidden="true"><div class="barra-fill" id="fim-barra"></div></div>
+      <div class="botoes-fim">
+        <button class="btn-redondo grande" id="btn-denovo" type="button" aria-label="Jogar de novo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><polyline points="3 3 3 8 8 8"/></svg>
+        </button>
+        <button class="btn-redondo grande" id="btn-fim-mapa" type="button" aria-label="Voltar ao mapa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 L3 6 V20 L9 18 L15 20 L21 18 V4 L15 6 Z"/><line x1="9" y1="4" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="20"/></svg>
+        </button>
+        <button class="btn-redondo grande destaque" id="btn-proxima" type="button" aria-label="Próxima fase" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- aviso (troféu, revisão em dia, alfabeto completo...) -->
+    <section id="tela-aviso" class="tela centro" hidden>
+      <div class="aviso-arte" id="aviso-arte"></div>
+      <h1 class="titulo-medio" id="aviso-titulo"></h1>
+      <p class="suave" id="aviso-texto"></p>
+      <div class="aviso-botoes" id="aviso-botoes"></div>
+    </section>
+
+    <!-- painel de progresso -->
+    <section id="tela-progresso" class="tela" hidden>
+      <header class="topo-simples">
+        <button class="btn-redondo" id="progresso-voltar" type="button" aria-label="Voltar ao mapa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="20" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/></svg>
+        </button>
+        <h1 class="titulo-medio">Progresso</h1>
+      </header>
+      <div class="coluna">
+        <div class="cards-idioma" id="progresso-cards"></div>
+        <h2 class="subtitulo" id="progresso-titulo"></h2>
+        <ul class="temas-lista" id="progresso-temas"></ul>
+      </div>
+    </section>
+
+    <!-- área dos pais -->
+    <section id="tela-pais" class="tela adulto" hidden>
+      <header class="topo-simples">
+        <button class="btn-redondo" id="pais-voltar" type="button" aria-label="Voltar para o app">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="20" y1="12" x2="5" y2="12"/><polyline points="11 6 5 12 11 18"/></svg>
+        </button>
+        <h1 class="titulo-medio">Área dos pais</h1>
+      </header>
+      <div class="coluna" id="pais-conteudo"></div>
+    </section>
+  </main>
+
+  <dialog id="dialogo" class="dialogo"></dialog>
+  <div id="torrada" class="torrada" role="status" hidden></div>
+
+  <noscript><p class="sem-js">O Pequeno Poliglota precisa de JavaScript para funcionar.</p></noscript>
+
+  <script src="/vendor/supabase.js"></script>
+  <script src="/logica.js"></script>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <filter id="wc" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="9"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+    <clipPath id="globeClip"><circle r="76"/></clipPath>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="#F1E8D5"/>
+  <g transform="translate(100,100) scale(0.92) translate(-100,-100)">
+  <g transform="translate(100,100)">
+    <circle r="78" fill="#90AEB8" filter="url(#wc)"/>
+    <g clip-path="url(#globeClip)">
+      <g fill="#93A87C">
+        <path d="M-6 -58 Q16 -52 12 -30 Q26 -18 16 2 Q24 20 4 36 Q-8 54 -16 36 Q-24 22 -14 6 Q-30 -10 -16 -28 Q-22 -46 -6 -58 Z" filter="url(#wc)"/>
+        <path d="M34 -30 Q62 -24 56 -2 Q48 10 34 4 Q28 -12 34 -30 Z" filter="url(#wc)"/>
+        <path d="M-64 -24 Q-52 -16 -56 4 Q-62 20 -68 8 Q-72 -10 -64 -24 Z" filter="url(#wc)"/>
+      </g>
+      <g fill="none" stroke="#7E9CA6" stroke-width="1.2" opacity="0.45">
+        <path d="M-74 -32 Q0 -22 74 -32"/><path d="M-78 2 Q0 14 78 2"/><path d="M-74 34 Q0 44 74 34"/>
+        <path d="M0 -78 Q12 0 0 78"/><path d="M0 -78 Q-12 0 0 78"/><path d="M-40 -66 Q-32 0 -40 66"/><path d="M40 -66 Q32 0 40 66"/>
+      </g>
+    </g>
+    <ellipse cx="-30" cy="-34" rx="18" ry="10" fill="#C0D4D9" opacity="0.35" filter="url(#wc)"/>
+    <path d="M-58 -48 Q0 -90 58 -48" fill="none" stroke="#B7A98E" stroke-width="1.6" stroke-dasharray="3 5" opacity="0.6" stroke-linecap="round"/>
+    <g transform="translate(52,-56) rotate(32)" filter="url(#wc)">
+      <path d="M16 0 L-14 -3 Q-18 -3 -18 0 Q-18 3 -14 3 Z" fill="#CE8C5A"/>
+      <path d="M-2 -1 L-10 -11 L3 -2 Z" fill="#BE7C4E"/><path d="M-2 1 L-10 11 L3 2 Z" fill="#BE7C4E"/><path d="M-14 -1 L-20 -6 L-12 -2 Z" fill="#BE7C4E"/>
+    </g>
+  </g>
+  </g>
+</svg>
