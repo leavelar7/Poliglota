@@ -1,5 +1,5 @@
 // conta.js — conta do responsável, perfis de criança e plano.
-import { db } from "./nuvem.js";
+import { db, veioDeRecuperacao } from "./nuvem.js";
 import { estado, lerPref, salvarPref } from "./estado.js";
 import * as guarda from "./guarda.js";
 
@@ -66,6 +66,7 @@ export async function carregarConta() {
 export async function iniciarConta(aoMudar) {
   const r = await db.auth.getSession();
   estado.sessao = (r.data && r.data.session) || null;
+  if (veioDeRecuperacao && estado.sessao) estado.recuperandoSenha = true;
   await carregarConta();
 
   db.auth.onAuthStateChange(function (evento, sessao) {
