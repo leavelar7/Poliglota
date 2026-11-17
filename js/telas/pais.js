@@ -215,14 +215,17 @@ function blocoEvolucao() {
   const tabela = el("table", { class: "tabela" }, [
     el("thead", {}, [el("tr", {}, [
       el("th", { scope: "col", text: "Idioma" }), el("th", { scope: "col", text: "Fases" }),
-      el("th", { scope: "col", text: "Estrelas" }), el("th", { scope: "col", text: "A revisar" })
+      el("th", { scope: "col", text: "Estrelas" }), el("th", { scope: "col", text: "Frases" }), el("th", { scope: "col", text: "A revisar" })
     ])]),
     el("tbody", {}, IDIOMAS.map(function (l) {
       const r = L.resumoIdioma(estrelasDe(dados, l), slugs);
-      const pend = L.revisaoPendente(vocab.palavras, dados.progresso[l] || {}, dados.revisao[l] || {}, agora).length;
+      const rev = dados.revisao[l] || {};
+      const pend = L.revisaoPendente(vocab.palavras, dados.progresso[l] || {}, rev, agora).length +
+        L.frasesPendentes(vocab.frases, vocab.ptPorId, rev, agora).length;
+      const fr = L.frasesAprendidas(rev);
       return el("tr", {}, [
         el("th", { scope: "row", text: NOME_IDIOMA[l] }), el("td", { text: r.vencidas + " de " + r.fases }),
-        el("td", { text: String(r.estrelas) }), el("td", { text: String(pend) })
+        el("td", { text: String(r.estrelas) }), el("td", { text: String(fr.simples + fr.completas) }), el("td", { text: String(pend) })
       ]);
     }))
   ]);
@@ -245,7 +248,8 @@ function blocoEvolucao() {
     if (dificeis.isConnected) { limpar(dificeis); dificeis.appendChild(el("p", { class: "nota", text: "Sem internet: as palavras mais difíceis não puderam ser carregadas." })); }
   });
 
-  return secao("Evolução de " + perfil.nome, [seletor, el("div", { class: "rolagem" }, [tabela]), dificeis]);
+  const explica = el("p", { class: "nota", text: "Frases: quantas frases a criança já aprendeu. Cada palavra aprendida (acertada em duas revisões seguidas) libera uma frase simples; a simples aprendida libera uma frase mais completa." });
+  return secao("Evolução de " + perfil.nome, [seletor, el("div", { class: "rolagem" }, [tabela]), explica, dificeis]);
 }
 
 // ---------------- preferências, plano, conta ----------------

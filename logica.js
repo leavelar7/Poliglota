@@ -158,9 +158,12 @@
     const jogados = {};
     temasJogados(progressoLang).forEach(function (t) { jogados[t] = true; });
     const rev = revisaoLang || {};
+    const vistas = {};   // a mesma palavra em duas fases (ex.: "pão") entra uma vez só
     const pend = palavras.filter(function (w) {
-      if (w.tema === "frases" || !jogados[w.tema]) return false;
-      return revisaoVencida(rev[w.pt], agora);
+      if (w.tema === "frases" || !jogados[w.tema] || vistas[w.pt]) return false;
+      if (!revisaoVencida(rev[w.pt], agora)) return false;
+      vistas[w.pt] = true;
+      return true;
     });
     pend.sort(function (a, b) {
       const pa = (rev[a.pt] && rev[a.pt].prox) || 0;
@@ -168,6 +171,95 @@
       return pa - pb;
     });
     return pend;
+  }
+
+  // ---------------- frases aplicadas ----------------
+  // depois de aprender uma palavra, a criança a encontra numa frase simples;
+  // depois de aprender a simples, numa frase completa. Cada frase tem a sua
+  // própria caixa de Leitner, guardada na revisão com a chave "frase:<id>:<nível>".
+  const CAIXA_APRENDIDA = 3;   // acertou duas revisões seguidas
+
+  function chaveFrase(palavraId, nivel) { return "frase:" + palavraId + ":" + nivel; }
+
+  // a frase está liberada?  nível 1: a palavra chegou à caixa 3.
+  //                         nível 2: a frase simples chegou à caixa 3.
+  function fraseLiberada(frase, ptDaPalavra, revisaoLang) {
+    const rev = revisaoLang || {};
+    const base = frase.nivel === 1 ? rev[ptDaPalavra] : rev[chaveFrase(frase.palavra_id, 1)];
+    return !!base && (base.caixa || 0) >= CAIXA_APRENDIDA;
+  }
+
+  // frases liberadas e vencidas, das mais atrasadas para as mais recentes.
+  // `frases` = [{palavra_id, nivel, ...}]; `ptPorId` = mapa id da palavra -> pt.
+  function frasesPendentes(frases, ptPorId, revisaoLang, agora) {
+    const rev = revisaoLang || {};
+    const pend = (frases || []).filter(function (f) {
+      const pt = ptPorId[f.palavra_id];
+      if (!pt || !fraseLiberada(f, pt, rev)) return false;
+      return revisaoVencida(rev[chaveFrase(f.palavra_id, f.nivel)], agora);
+    });
+    pend.sort(function (a, b) {
+      const ea = rev[chaveFrase(a.palavra_id, a.nivel)], eb = rev[chaveFrase(b.palavra_id, b.nivel)];
+      return ((ea && ea.prox) || 0) - ((eb && eb.prox) || 0);
+    });
+    return pend;
+  }
+
+  // monta uma rodada de revisão com no máximo `max` cartões, reservando até
+  // `cotaFrases` lugares para frases. Se faltar de um tipo, completa com o outro.
+  function montarRevisao(palavrasPend, frasesPend, max, cotaFrases) {
+    if (max === undefined) max = 10;
+    if (cotaFrases === undefined) cotaFrases = 4;
+    const pw = palavrasPend || [], pf = frasesPend || [];
+    let nf = Math.min(pf.length, cotaFrases);
+    const nw = Math.min(pw.length, max - nf);
+    nf = Math.min(pf.length, max - nw);
+    return {
+      palavras: pw.slice(0, nw),
+      frases: pf.slice(0, nf)
+    };
+  }
+
+  // quantas frases (de cada nível) a criança já aprendeu num idioma
+  function frasesAprendidas(revisaoLang) {
+    const out = { simples: 0, completas: 0 };
+    const rev = revisaoLang || {};
+    for (const k in rev) {
+      if (k.indexOf("frase:") !== 0 || (rev[k].caixa || 0) < CAIXA_APRENDIDA) continue;
+      if (k.slice(-2) === ":1") out.simples++; else out.completas++;
+    }
+    return out;
+  }
+
+  // separa uma frase em palavras comparáveis ("dell'aereo" -> "dell", "aereo"; ß -> ss)
+  function palavrasDaFrase(s) {
+    return normalizar(String(s).replace(/ß/g, "ss").replace(/['’\-]/g, " ")).split(" ").filter(Boolean);
+  }
+
+  // nota de 0 a 1 para uma frase dita: a fração das palavras do alvo que
+  // apareceram (com tolerância a pronúncia de criança) no que foi reconhecido.
+  // Dizer só uma palavra da frase não basta, ao contrário de pontuar().
+  function pontuarFrase(textos, alvoBruto) {
+    const alvo = palavrasDaFrase(alvoBruto);
+    if (!alvo.length) return 0;
+    let melhor = 0;
+    (textos || []).forEach(function (t) {
+      const dito = palavrasDaFrase(t);
+      if (!dito.length) return;
+      let acertos = 0;
+      alvo.forEach(function (a) {
+        let s = 0;
+        dito.forEach(function (d) {
+          const m = Math.max(a.length, d.length) || 1;
+          const x = 1 - distancia(a, d) / m;
+          if (x > s) s = x;
+        });
+        if (s >= 0.7) acertos++;
+      });
+      const nota = acertos / alvo.length;
+      if (nota > melhor) melhor = nota;
+    });
+    return melhor;
   }
 
   // ---------------- sincronização entre aparelhos ----------------
@@ -260,7 +352,9 @@
     revisaoPendente: revisaoPendente,
     mesclarProgresso: mesclarProgresso, mesclarRevisao: mesclarRevisao,
     faseLiberadaNoPlano: faseLiberadaNoPlano, resumoIdioma: resumoIdioma,
-    palavrasDificeis: palavrasDificeis
+    palavrasDificeis: palavrasDificeis,
+    chaveFrase: chaveFrase, fraseLiberada: fraseLiberada, frasesPendentes: frasesPendentes,
+    montarRevisao: montarRevisao, frasesAprendidas: frasesAprendidas, pontuarFrase: pontuarFrase
   };
 
   // no Node (testes) vira módulo; no navegador (app) vira window.Logica

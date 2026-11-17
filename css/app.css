@@ -115,6 +115,12 @@ body.app { overscroll-behavior-y: none; }
 .figura { width: min(58vw, 220px); height: auto; aspect-ratio: 1; }
 .palavra { font-size: clamp(2.2rem, 11vw, 3.2rem); font-weight: 700; line-height: 1.1; margin: 4px 0 0; overflow-wrap: anywhere; }
 .traducao { font-size: 1.0625rem; color: var(--tinta-suave); margin: 2px 0 0; }
+.palavra.frase { font-size: clamp(1.45rem, 6.4vw, 1.9rem); line-height: 1.25; margin-top: 8px; }
+.palavra.frase + .traducao { font-size: 1rem; }
+/* selo do cartão de frase: um balão para a simples, dois para a completa */
+.selo-frase { display: flex; justify-content: center; gap: 5px; height: 16px; margin-bottom: 4px; }
+.selo-frase i { display: block; width: 22px; height: 16px; border-radius: 9px 9px 9px 2px; background: var(--ocre); }
+.selo-frase.nivel-1 i + i { background: var(--papel-sombra); }
 .letra-grande { font-size: clamp(7rem, 40vw, 10rem); font-weight: 700; line-height: 1.2; }
 .cartao-botoes { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 16px; }
 .btn-som { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; padding: 0; color: var(--tinta-suave); background: var(--papel-sombra); border: none; border-radius: 50%; }

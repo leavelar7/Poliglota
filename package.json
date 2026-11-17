@@ -1,13 +1,13 @@
 {
   "name": "pequeno-poliglota",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "private": true,
   "description": "Inglês, alemão e italiano para crianças que ainda não leem.",
   "scripts": {
     "test": "node --test logica.test.js",
     "checar": "for f in js/*.js js/telas/*.js sw.js; do node --check \"$f\" || exit 1; done",
     "servir": "node testes/navegador/servidor.js \"$PWD\" 4173",
-    "teste:navegador": "node testes/navegador/jogo.js && node testes/navegador/conta.js && node testes/navegador/recuperacao.js",
+    "teste:navegador": "node testes/navegador/jogo.js && node testes/navegador/conta.js && node testes/navegador/recuperacao.js && node testes/navegador/frases.js",
     "audios": "node gerar_audios.js"
   },
   "dependencies": {

@@ -251,3 +251,65 @@ test("palavrasDificeis: ordena pela menor taxa de acerto e ignora poucas tentati
   const d = palavrasDificeis(t, 5, 3);
   assert.deepStrictEqual(d.map(function (x) { return x.palavra; }), ["mao", "pe"]);
 });
+
+// ---------- frases aplicadas ----------
+const { chaveFrase, fraseLiberada, frasesPendentes, montarRevisao, frasesAprendidas, pontuarFrase, revisaoPendente: revPend } = require("./logica.js");
+
+test("revisaoPendente não repete a mesma palavra de duas fases", function () {
+  const ps = [{ id: 1, pt: "pão", tema: "comida" }, { id: 2, pt: "pão", tema: "comida" }, { id: 3, pt: "ovo", tema: "comida" }];
+  const p = revPend(ps, { comida: { rodadas: 1 } }, {}, 1000);
+  assert.deepStrictEqual(p.map(function (w) { return w.id; }), [1, 3]);
+});
+
+test("frase simples libera quando a palavra chega à caixa 3", function () {
+  const f1 = { palavra_id: 44, nivel: 1 };
+  assert.strictEqual(fraseLiberada(f1, "gato", { gato: { caixa: 2 } }), false);
+  assert.strictEqual(fraseLiberada(f1, "gato", { gato: { caixa: 3 } }), true);
+  assert.strictEqual(fraseLiberada(f1, "gato", {}), false);
+});
+
+test("frase completa libera quando a simples chega à caixa 3", function () {
+  const f2 = { palavra_id: 44, nivel: 2 };
+  const rev = { gato: { caixa: 5 } };
+  assert.strictEqual(fraseLiberada(f2, "gato", rev), false);   // palavra aprendida não basta
+  rev[chaveFrase(44, 1)] = { caixa: 3 };
+  assert.strictEqual(fraseLiberada(f2, "gato", rev), true);
+});
+
+test("frasesPendentes: só liberadas e vencidas, mais atrasadas primeiro", function () {
+  const frases = [{ palavra_id: 1, nivel: 1 }, { palavra_id: 2, nivel: 1 }, { palavra_id: 3, nivel: 1 }, { palavra_id: 1, nivel: 2 }];
+  const pt = { 1: "a", 2: "b", 3: "c" };
+  const rev = { a: { caixa: 3 }, b: { caixa: 4 }, c: { caixa: 1 } };
+  rev[chaveFrase(1, 1)] = { caixa: 2, prox: 500 };   // vencida
+  rev[chaveFrase(2, 1)] = { caixa: 2, prox: 5000 };  // ainda não
+  const p = frasesPendentes(frases, pt, rev, 1000);
+  assert.deepStrictEqual(p.map(function (f) { return f.palavra_id + ":" + f.nivel; }), ["1:1"]);
+  rev[chaveFrase(1, 1)] = { caixa: 3, prox: 900 };
+  const p2 = frasesPendentes(frases, pt, rev, 1000);
+  assert.deepStrictEqual(p2.map(function (f) { return f.palavra_id + ":" + f.nivel; }), ["1:2", "1:1"]); // a completa nunca revisada vem antes
+});
+
+test("montarRevisao reserva lugar para frases e completa com o outro tipo", function () {
+  const w = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], f = ["a", "b", "c", "d", "e", "f"];
+  assert.deepStrictEqual(montarRevisao(w, f, 10, 4), { palavras: [1, 2, 3, 4, 5, 6], frases: ["a", "b", "c", "d"] });
+  assert.deepStrictEqual(montarRevisao([1, 2], f, 10, 4), { palavras: [1, 2], frases: ["a", "b", "c", "d", "e", "f"] });
+  assert.deepStrictEqual(montarRevisao(w, [], 10, 4).palavras.length, 10);
+  assert.deepStrictEqual(montarRevisao([], [], 10, 4), { palavras: [], frases: [] });
+});
+
+test("frasesAprendidas conta por nível a partir da caixa 3", function () {
+  const rev = { gato: { caixa: 5 } };
+  rev[chaveFrase(44, 1)] = { caixa: 3 }; rev[chaveFrase(45, 1)] = { caixa: 2 }; rev[chaveFrase(44, 2)] = { caixa: 4 };
+  assert.deepStrictEqual(frasesAprendidas(rev), { simples: 1, completas: 1 });
+});
+
+test("pontuarFrase exige a frase, não só uma palavra", function () {
+  assert.strictEqual(pontuarFrase(["I see a cat"], "I see a cat."), 1);
+  assert.ok(pontuarFrase(["cat"], "I see a cat.") < 0.4);
+  assert.ok(pontuarFrase(["I see the cat"], "I see a cat.") >= 0.6);          // uma palavra trocada
+  assert.ok(pontuarFrase(["ich esse ein ei"], "Ich esse ein Ei.") === 1);
+  assert.ok(pontuarFrase(["der Sand am Strand kitzelt meinen Fuss"], "Der Sand am Strand kitzelt meinen Fuß.") === 1); // ß
+  assert.ok(pontuarFrase(["manda una foto dell aereo"], "Manda una foto dell'aereo.") === 1); // apóstrofo
+  assert.ok(pontuarFrase(["nada a ver com isso"], "O gato mia.") < 0.4);
+  assert.strictEqual(pontuarFrase([], "O gato mia."), 0);
+});

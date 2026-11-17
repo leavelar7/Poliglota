@@ -18,8 +18,17 @@ export function estrelasMapa(lang) {
   return m;
 }
 
+// o que está para revisar hoje num idioma: palavras vencidas e frases liberadas e vencidas
 export function pendentesRevisao(lang) {
-  return L.revisaoPendente(vocab.palavras, guarda.progresso(lang), guarda.revisao(lang), Date.now());
+  const agora = Date.now(), rev = guarda.revisao(lang);
+  return {
+    palavras: L.revisaoPendente(vocab.palavras, guarda.progresso(lang), rev, agora),
+    frases: L.frasesPendentes(vocab.frases, vocab.ptPorId, rev, agora)
+  };
+}
+export function totalPendente(lang) {
+  const p = pendentesRevisao(lang);
+  return p.palavras.length + p.frases.length;
 }
 
 function temaLiberado(t) { return L.faseLiberadaNoPlano(t.gratis, estado.plano, COBRANCA_ATIVA); }
@@ -72,7 +81,7 @@ function renderMapa() {
       html: BANDEIRA[l], onclick: function () { abrirMapa(l); } }));
   });
 
-  const nRev = pendentesRevisao(lang).length;
+  const nRev = totalPendente(lang);
   $("btn-revisao-txt").textContent = nRev > 0 ? "Revisão (" + nRev + ")" : "Revisão";
   $("btn-revisao").classList.toggle("tem-pendencia", nRev > 0);
   $("btn-abc").hidden = !vocab.letras.some(function (x) { return x.idioma === lang; });
