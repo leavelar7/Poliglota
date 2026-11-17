@@ -14,7 +14,7 @@ export const COBRANCA_ATIVA = false;
 
 // Aparecem na política de privacidade, nos termos e no rodapé. PREENCHA antes de divulgar.
 export const CONTATO_EMAIL = "";
-export const RESPONSAVEL_NOME = "";
+export const RESPONSAVEL_NOME = "Leslie Avelar";
 
 export const VERSAO = "3.0.0";
 
