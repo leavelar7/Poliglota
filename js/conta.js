@@ -23,6 +23,8 @@ export function mensagemDeErro(e) {
   if (m.includes("rate limit") || m.includes("too many") || m.includes("security purposes")) return "Muitas tentativas seguidas. Espere um minuto e tente de novo.";
   if (m.includes("password") && (m.includes("least") || m.includes("weak") || m.includes("short"))) return "A senha precisa ter pelo menos 8 caracteres.";
   if (m.includes("limite de 4")) return "Cada conta pode ter até 4 crianças.";
+  if (m.includes("sending") && m.includes("email")) return "Não conseguimos enviar o e-mail de confirmação agora. Tente de novo mais tarde.";
+  if (m.includes("email") && m.includes("invalid")) return "Este e-mail não parece válido. Confira e tente de novo.";
   if (m.includes("fetch") || m.includes("network")) return "Sem conexão com a internet. Tente de novo em instantes.";
   return "Não deu certo agora. Tente de novo em instantes.";
 }
