@@ -40,8 +40,6 @@ function gravar(id, d) {
 })();
 
 export function usarPerfil(id) { perfilId = id || VISITANTE; }
-export function perfilAtual() { return perfilId; }
-export function ehVisitante() { return perfilId === VISITANTE; }
 
 export function progresso(lang) { return ler(perfilId).progresso[lang] || {}; }
 export function revisao(lang) { return ler(perfilId).revisao[lang] || {}; }

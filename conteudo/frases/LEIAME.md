@@ -21,6 +21,7 @@ então as frases valem para as duas.
 
 1. Edite a linha no arquivo da fase.
 2. `node conteudo/frases/gerar_sql.js --checar` para validar.
-3. Gere o SQL de novo (comando acima) e aplique no Supabase.
+3. Gere o SQL de novo (comando acima) e rode o arquivo gerado no Supabase, em SQL Editor
+   (ele apaga e recarrega a tabela `frases_aplicadas` inteira, numa transação).
 4. Faça o push: o workflow de áudios refaz o mp3 das frases que mudaram (ele guarda o texto
    de cada áudio em `audio/frases.json`).

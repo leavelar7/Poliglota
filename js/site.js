@@ -4,12 +4,14 @@ import { CONTATO_EMAIL, RESPONSAVEL_NOME } from "./config.js";
 // ---- contato e ano (vêm de config.js) ----
 document.querySelectorAll("[data-ano]").forEach(function (e) { e.textContent = new Date().getFullYear(); });
 document.querySelectorAll("[data-contato]").forEach(function (e) {
-  if (CONTATO_EMAIL) { const a = document.createElement("a"); a.href = "mailto:" + CONTATO_EMAIL; a.textContent = CONTATO_EMAIL; e.replaceChildren(a); }
+  if (CONTATO_EMAIL) { const a = document.createElement("a"); a.href = "mailto:" + CONTATO_EMAIL; a.textContent = CONTATO_EMAIL; e.replaceChildren(a); e.classList.remove("pendente"); }
 });
 document.querySelectorAll("[data-contato-link]").forEach(function (a) {
   if (CONTATO_EMAIL) { a.href = "mailto:" + CONTATO_EMAIL; a.hidden = false; }
 });
-document.querySelectorAll("[data-responsavel]").forEach(function (e) { if (RESPONSAVEL_NOME) e.textContent = RESPONSAVEL_NOME; });
+document.querySelectorAll("[data-responsavel]").forEach(function (e) {
+  if (RESPONSAVEL_NOME) { e.textContent = RESPONSAVEL_NOME; e.classList.remove("pendente"); }
+});
 
 // ---- cartão de demonstração: palavras e áudios reais do app ----
 const PALAVRAS = [
