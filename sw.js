@@ -4,7 +4,7 @@
 //    sem internet, ou se a rede demorar mais de 4 s, usa a cópia guardada.
 //  - imagens e áudios: guardados conforme a criança joga (e no pré-carregamento da fase).
 //  - Supabase e qualquer outro domínio: passam direto, sem cache.
-const VERSAO = "v3.1.0";
+const VERSAO = "v3.1.1";
 const CASCA = "pp-casca-" + VERSAO;
 const MIDIA = "pp-midia-v1";   // imagens e áudios sobrevivem às atualizações do app
 

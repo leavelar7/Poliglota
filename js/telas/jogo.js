@@ -350,4 +350,3 @@ export function iniciarJogo() {
   $("btn-fim-mapa").addEventListener("click", function () { ir("mapa"); });
 }
 
-export function emJogo() { return !$("tela-jogo").hidden; }

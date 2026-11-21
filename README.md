@@ -1,8 +1,8 @@
 # Pequeno Poliglota 🌍
 
-A web app that teaches three foreign languages (English, German, Italian) to a 5-year-old **who cannot read yet**, using illustrated flashcards, native audio, speech practice, a gamified level map, and spaced repetition.
+A web app that teaches three foreign languages (English, German, Italian) to a 5-year-old **who cannot read yet**, using illustrated flashcards, pronunciation audio, speech practice, a gamified level map, spaced repetition, and applied sentences.
 
-**Live demo:** https://poliglota-app-delta.vercel.app
+**Live:** https://poliglota-app-delta.vercel.app (landing page) · https://poliglota-app-delta.vercel.app/app (the app)
 
 *🇧🇷 Versão em português [mais abaixo](#-pequeno-poliglota-português).*
 
@@ -14,7 +14,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 
 - **Zero reading required** — every choice is made through images, icons, or voice.
 - **Minimal buttons** — the child can operate it almost alone.
-- **Usable vocabulary** — real words (and, later, short phrases), not isolated jargon.
+- **Usable vocabulary** — real words and the sentences they live in, not isolated jargon.
 - **Calm visuals** — hand-drawn watercolor illustrations, no sensory overload.
 
 ## Features
@@ -22,14 +22,14 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 - **Gamified level map** per language: each theme is a stage with 1–3 stars and a trophy; the next stage unlocks only after the child earns 2 stars (played ≥3 times with ≥90% accuracy).
 - **Spaced repetition** (Leitner system): words move through boxes with growing intervals (1, 3, 7, 16, 35 days); a correct answer promotes the word, a miss resets it.
 - **Speech recognition**: the child repeats the word and the app advances on its own, tolerant of imperfect pronunciation (Levenshtein-based fuzzy matching).
-- **Native pronunciation audio** for all three languages, pre-generated for consistent quality across devices.
+- **Pronunciation audio** for every word and sentence in all three languages (Google TTS), pre-generated for consistent quality across devices.
 - **Progress dashboard**: stars, cleared stages, and trophies per language.
 - **Applied sentences**: every word has a simple and a fuller sentence (1,052 sentences in en/de/it with Portuguese translation). A word learned in review unlocks its simple sentence; the simple one learned unlocks the fuller one. Each sentence has its own Leitner box.
 - **Parent accounts and child profiles**: up to 4 children per account, each with their own map; progress syncs across devices (offline-first, merged without loss).
 - **Parents' area** behind a parental gate: per-child report (stages, stars, words due, hardest words), listen-and-repeat mode without microphone, data export and account deletion (LGPD).
 - **Installable PWA** that keeps working offline for stages already opened.
 - **Landing page, privacy policy and terms** in Portuguese.
-- **~570 illustrated concepts** across 29 themes (one image serves all three languages); goal: 1000.
+- **~525 illustrated words** across 28 stages (one image serves all three languages); goal: 1000.
 - **German with articles** (der/die/das) baked into every noun.
 - **Responsive** layout (works on phones).
 - **50 automated unit tests** over the pure game logic, browser smoke tests, and CI on every push.
@@ -46,7 +46,7 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 | Speech recognition | Web Speech API |
 | Illustrations | Hand-drawn SVG (watercolor filter via `feTurbulence` + `feDisplacementMap`) |
 | Tests | Node's built-in test runner (`node:test`); Puppeteer smoke tests with a mocked Supabase |
-| Automation | GitHub Actions (CI on push, daily keep-alive ping) |
+| Automation | GitHub Actions (CI on push, daily keep-alive ping, audio generation) |
 
 ## Architecture
 
@@ -106,8 +106,8 @@ Mainstream language apps rely on reading and busy, button-heavy menus — useles
 - **Best-round accuracy for stars.** A single early mistake never permanently blocks the third star — the app tracks a word's *best* round, not a cumulative average.
 - **Hand-drawn SVG.** Light, scalable, and visually coherent across the whole app.
 - **iOS fallback.** The Web Speech API is unreliable on iOS, so recognition is disabled there and the app runs in a "listen, repeat and tap" mode that still earns stars. Parents can choose this mode on any device.
-- **Silent schema migration.** A version key in localStorage clears progress saved under old rules, so the data model can evolve without stale state — no reset button needed.
-- **Automated asset audit.** A script checks, per batch, that every image and audio file exists — no hunting for a missing file among hundreds.
+- **Silent data migration.** Progress saved by the original single-file app is carried into the new per-profile storage on first launch, and the first child profile created on that device inherits it.
+- **Content as text files, audio by CI.** The 1,052 sentences live in plain text files (one per stage), validated and turned into SQL by `conteudo/frases/gerar_sql.js`. A GitHub Actions workflow generates any missing audio and regenerates the audio of sentences whose text changed.
 
 ## Tests
 
@@ -130,11 +130,16 @@ npm run audios           # generates missing pronunciation audio (needs the gtts
 
 `localhost` counts as a secure origin, so the microphone works. Deployment is automatic: every `git push` to `main` triggers a Vercel build. The Supabase credentials in the front-end are the **URL** and the **anon key**, public by design; Row Level Security is what protects the data.
 
+## Configuration already done
+
+- Supabase Auth: Site URL and redirect URLs point to the production domain (and to Vercel preview URLs); confirmation and password-reset e-mails are in Portuguese and sent through Gmail SMTP.
+- All migrations in `supabase/migrations/` are applied, including the one that closed the legacy anonymous access to `tentativas`.
+
 ## Before going public
 
-- Fill `CONTATO_EMAIL` and `RESPONSAVEL_NOME` in `js/config.js` (shown in the privacy policy, terms and footer).
-- In Supabase → Authentication → URL Configuration, set the Site URL to the production domain and add `https://<domain>/app` to the redirect URLs. Configure a custom SMTP sender: the built-in one is rate-limited to a few e-mails per hour.
-- After the new version is live, run `supabase/migrations/20261116_02_bloquear_legado.sql` to close the legacy anonymous access to `tentativas`.
+- Fill `CONTATO_EMAIL` in `js/config.js` (shown in the privacy policy, terms and footer).
+- Move to an own domain and a transactional e-mail provider (Gmail works, but messages may land in spam).
+- Have a fluent speaker review the German and Italian sentences in `conteudo/frases/`.
 - Have the privacy policy and terms reviewed by a lawyer.
 
 ## Roadmap
@@ -148,7 +153,7 @@ npm run audios           # generates missing pronunciation audio (needs the gtts
 - [ ] Payments (the free/premium split already exists, switched off)
 - [ ] "Tap the right picture" exercise for devices without speech recognition
 - [ ] Paid speech recognizer for harder/short words
-- [ ] Short **phrases** built from the vocabulary
+- [x] **Applied sentences**: a simple and a fuller sentence for every word, unlocked by spaced repetition
 
 ## Author
 
@@ -159,9 +164,9 @@ Leslie Avelar — a personal project to learn software engineering end to end.
 
 # 🇧🇷 Pequeno Poliglota (Português)
 
-Aplicativo web que ensina três idiomas (inglês, alemão e italiano) a uma criança de 5 anos que **ainda não sabe ler**, com flashcards ilustrados, áudio nativo, prática de fala, um mapa de fases e repetição espaçada.
+Aplicativo web que ensina três idiomas (inglês, alemão e italiano) a uma criança de 5 anos que **ainda não sabe ler**, com flashcards ilustrados, áudio de pronúncia, prática de fala, um mapa de fases, repetição espaçada e frases aplicadas.
 
-**Demo:** https://poliglota-app-delta.vercel.app
+**No ar:** https://poliglota-app-delta.vercel.app (apresentação) · https://poliglota-app-delta.vercel.app/app (o app)
 
 ## O problema
 
@@ -169,7 +174,7 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 
 - **Zero dependência de leitura** — toda escolha é por imagem, ícone ou voz.
 - **Mínimo de botões** — a criança consegue operar quase sozinha.
-- **Vocabulário utilizável** — palavras reais (e, no futuro, frases curtas).
+- **Vocabulário utilizável** — palavras reais e as frases em que elas aparecem.
 - **Estímulo visual sóbrio** — ilustrações em aquarela, sem excesso.
 
 ## Funcionalidades
@@ -177,9 +182,9 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 - **Mapa de fases** por idioma: cada tema é uma fase com 1–3 estrelas e um troféu; a próxima fase só abre com 2 estrelas (jogar ≥3 vezes e acertar ≥90%).
 - **Repetição espaçada** (método Leitner): as palavras sobem por caixas com intervalos crescentes (1, 3, 7, 16, 35 dias); acertou, sobe; errou, volta pra primeira caixa.
 - **Reconhecimento de fala**: a criança repete a palavra e o app avança sozinho, tolerante a erros de pronúncia (distância de Levenshtein).
-- **Áudio de pronúncia nativa** nos três idiomas, pré-gerado.
+- **Áudio de pronúncia** (voz do Google) de cada palavra e frase nos três idiomas, pré-gerado.
 - **Painel de progresso**: estrelas, fases vencidas e troféus por idioma.
-- **~570 conceitos ilustrados** em 29 temas (uma imagem serve os 3 idiomas); meta: 1000.
+- **~525 palavras ilustradas** em 28 fases (uma imagem serve os 3 idiomas); meta: 1000.
 - **Alemão com artigos** (der/die/das) em todos os substantivos.
 - **Conta dos pais e perfis de criança** (até 4), com progresso sincronizado entre aparelhos.
 - **Área dos pais** com relatório por criança, modo sem microfone, exportação e exclusão de dados (LGPD).
@@ -199,8 +204,8 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 | Áudio | Google TTS (gTTS) — gerado por script Node |
 | Reconhecimento de voz | Web Speech API |
 | Ilustrações | SVG à mão (filtro aquarela com `feTurbulence`) |
-| Testes | Test runner nativo do Node (`node:test`) |
-| Automação | GitHub Actions (ping diário de keep-alive) |
+| Testes | Test runner nativo do Node (`node:test`); testes de navegador com Puppeteer e Supabase simulado |
+| Automação | GitHub Actions (CI a cada push, ping diário de keep-alive, geração de áudios) |
 
 ## Decisões de engenharia
 
@@ -208,7 +213,10 @@ Apps de idioma convencionais dependem de leitura e de menus cheios de botões �
 - **Áudio pré-gerado, não voz do aparelho.** Garante qualidade e consistência entre celulares.
 - **Áudio identificado pelo `id` da palavra, não pela imagem.** Como uma imagem é reutilizada por vários conceitos, a chave por imagem causava colisão de áudio.
 - **Estrela pela melhor rodada.** Um erro antigo nunca trava a terceira estrela pra sempre.
-- **Migração de dados silenciosa.** Uma chave de versão no localStorage limpa progresso salvo por regras antigas, sem botão de reset.
+- **Progresso primeiro no aparelho.** Cada resultado é gravado no aparelho e depois enviado para a nuvem; se dois aparelhos divergirem, cada fase fica com o maior número de rodadas e o melhor acerto, e cada cartão de revisão com o estado mais recente.
+- **Segurança no banco, não no navegador.** A chave anônima é pública; o RLS deixa o vocabulário só para leitura e limita perfis e progresso ao responsável logado.
+- **Migração de dados silenciosa.** O progresso salvo pela versão antiga do app passa para o novo formato na primeira abertura, e o primeiro perfil criado naquele aparelho herda esse progresso.
+- **Conteúdo em arquivos de texto, áudio pelo GitHub.** As 1.052 frases ficam em arquivos de texto (um por fase), validados e convertidos em SQL por `conteudo/frases/gerar_sql.js`. Um workflow do GitHub gera os áudios que faltam e refaz os das frases editadas.
 
 ## Testes
 
@@ -228,11 +236,16 @@ npm run audios           # gera os áudios que faltam (precisa do pacote gtts)
 
 O deploy é automático: todo `git push` na `main` dispara um build na Vercel. As credenciais do Supabase no front são a **URL** e a **chave anônima (anon)**, públicas por natureza; quem protege os dados é o RLS.
 
+## Configuração já feita
+
+- Login no Supabase: Site URL e endereços de retorno apontam para o domínio de produção (e para os previews da Vercel); os e-mails de confirmação e de troca de senha estão em português e saem pelo Gmail.
+- Todas as migrações de `supabase/migrations/` estão aplicadas, inclusive a que fechou o acesso anônimo antigo à tabela `tentativas`.
+
 ## Antes de divulgar
 
-- Preencha `CONTATO_EMAIL` e `RESPONSAVEL_NOME` em `js/config.js`.
-- No Supabase → Authentication → URL Configuration, ponha o domínio de produção como Site URL e adicione `https://<domínio>/app` às Redirect URLs. Configure um SMTP próprio: o padrão envia poucos e-mails por hora.
-- Com a versão nova no ar, rode `supabase/migrations/20261116_02_bloquear_legado.sql`.
+- Preencha `CONTATO_EMAIL` em `js/config.js`.
+- Passe para um domínio próprio e um serviço de e-mail transacional (o Gmail funciona, mas as mensagens podem cair no spam).
+- Peça a alguém fluente para revisar as frases em alemão e italiano em `conteudo/frases/`.
 - Peça a um advogado para revisar a política de privacidade e os termos.
 - Para ligar a separação grátis/premium, mude `COBRANCA_ATIVA` para `true` em `js/config.js` (ainda sem pagamento integrado).
 

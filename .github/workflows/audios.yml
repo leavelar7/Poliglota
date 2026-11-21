@@ -23,6 +23,12 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
+      # se outro push chegou enquanto esta execução esperava na fila (por exemplo, o
+      # commit de áudios de uma execução anterior), parte dele e não gera tudo de novo
+      - name: Usar a versão mais nova da branch
+        run: |
+          git fetch --depth=1 origin "${GITHUB_REF_NAME}"
+          git reset --hard FETCH_HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 22
