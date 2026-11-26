@@ -89,7 +89,7 @@ function iniciarAlfabeto() {
 
 // ---------------- cartão ----------------
 function mostrarItem() {
-  vez++; falhas = 0; ocupado = false;
+  vez++; falhas = 0; ocupado = false; cancelarEscuta();
   atual = itens[fila[p]];
   const feito = repassando ? 1 : p / fila.length;
   $("jogo-barra").style.width = Math.round(feito * 100) + "%";

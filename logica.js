@@ -36,13 +36,31 @@
   // dá uma nota de 0 a 1 de quão perto o que foi dito está do alvo.
   // recebe VÁRIAS alternativas (o reconhecimento devolve até 5) e
   // fica com a melhor. 1 = igual (ou contém); menos = mais longe.
+  // palavras que o reconhecimento de voz escreve de outro jeito porque SOAM
+  // iguais (ex.: a criança diz "eye" e o Chrome escreve "I"). Sem isso a
+  // palavra nunca conta como certa e a fase pode não passar dos 90%.
+  const SOA_IGUAL = {
+    eye: ["i", "aye", "ai", "eye"], ear: ["here", "hear", "year"], hair: ["here", "hear", "hare", "air"],
+    knee: ["need", "nee", "neat"], two: ["to", "too"], one: ["won", "wan"], four: ["for", "fore"],
+    eight: ["ate"], sea: ["see", "c"], bee: ["be", "b"], tea: ["tee", "t"], sew: ["so", "sow"],
+    row: ["roe", "rho"], bye: ["by", "buy", "bi"], new: ["knew", "nu"], pear: ["pair", "pare"],
+    ice: ["eyes"], owl: ["al", "owls"], son: ["sun"], flower: ["flour"], night: ["knight"]
+  };
+
+  function soaIgual(alvo, dito) {
+    // o alvo pode trazer artigo ("das Ohr"): olha a última palavra
+    const ultima = alvo.split(" ").pop();
+    const lista = SOA_IGUAL[alvo] || SOA_IGUAL[ultima];
+    return !!lista && lista.indexOf(dito) !== -1;
+  }
+
   function pontuar(textos, alvoBruto) {
     const alvo = normalizar(alvoBruto);
     let s = 0;
     textos.forEach(function (t) {
       const dito = normalizar(t);
       let x;
-      if (dito === alvo || dito.includes(alvo) || alvo.includes(dito)) x = 1;
+      if (dito === alvo || dito.includes(alvo) || alvo.includes(dito) || soaIgual(alvo, dito)) x = 1;
       else {
         const m = Math.max(alvo.length, dito.length) || 1;
         x = 1 - distancia(alvo, dito) / m;
@@ -251,7 +269,7 @@
         let s = 0;
         dito.forEach(function (d) {
           const m = Math.max(a.length, d.length) || 1;
-          const x = 1 - distancia(a, d) / m;
+          const x = soaIgual(a, d) ? 1 : 1 - distancia(a, d) / m;
           if (x > s) s = x;
         });
         if (s >= 0.7) acertos++;
