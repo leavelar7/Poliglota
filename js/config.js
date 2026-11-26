@@ -16,7 +16,7 @@ export const COBRANCA_ATIVA = false;
 export const CONTATO_EMAIL = "";
 export const RESPONSAVEL_NOME = "Leslie Avelar";
 
-export const VERSAO = "3.1.1";
+export const VERSAO = "3.1.2";
 
 export const IDIOMAS = ["en", "de", "it"];
 export const NOME_IDIOMA = { en: "Inglês", de: "Alemão", it: "Italiano" };

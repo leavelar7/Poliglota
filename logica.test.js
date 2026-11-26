@@ -313,3 +313,18 @@ test("pontuarFrase exige a frase, não só uma palavra", function () {
   assert.ok(pontuarFrase(["nada a ver com isso"], "O gato mia.") < 0.4);
   assert.strictEqual(pontuarFrase([], "O gato mia."), 0);
 });
+
+test("palavras de mesmo som contam como certas (fase Corpo)", () => {
+  assert.equal(pontuar(["I"], "eye"), 1);
+  assert.equal(pontuar(["here"], "ear"), 1);
+  assert.equal(pontuar(["here"], "hair"), 1);
+  assert.equal(pontuar(["need"], "knee"), 1);
+  assert.equal(pontuar(["to"], "two"), 1);
+  // sem confundir palavras diferentes
+  assert.ok(pontuar(["dog"], "eye") < 0.3);
+  assert.ok(pontuar(["I"], "ear") < 0.3);
+});
+
+test("frase aceita palavra de mesmo som", () => {
+  assert.equal(pontuarFrase(["I see with my I"], "I see with my eye"), 1);
+});
